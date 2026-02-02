@@ -1,287 +1,449 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Модель дров'яної печі</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            overflow: hidden;
-        }
-        #canvas-container {
-            width: 100vw;
-            height: 100vh;
-            position: relative;
-        }
-        #controls {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            max-width: 300px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        .control-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        input[type="range"] {
-            width: 100%;
-        }
-        .value-display {
-            font-size: 12px;
-            color: #666;
-            margin-top: 2px;
-        }
-        h2 {
-            font-size: 18px;
-            margin-bottom: 15px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Модель дров'яної печі</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+    #canvas-container {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+    #controls {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      max-width: 300px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .control-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    input[type="range"] {
+      width: 100%;
+    }
+    .value-display {
+      font-size: 12px;
+      color: #666;
+      margin-top: 2px;
+    }
+    h2 {
+      font-size: 18px;
+      margin-bottom: 15px;
+    }
+  </style>
 </head>
 <body>
-    <div id="canvas-container"></div>
-    <div id="controls">
-        <h2>Параметри печі</h2>
-        
-        <div class="control-group">
-            <label for="width">Ширина (см):</label>
-            <input type="range" id="width" min="30" max="100" value="50" step="5">
-            <div class="value-display" id="width-value">50 см</div>
-        </div>
-        
-        <div class="control-group">
-            <label for="depth">Глибина (см):</label>
-            <input type="range" id="depth" min="30" max="100" value="50" step="5">
-            <div class="value-display" id="depth-value">50 см</div>
-        </div>
-        
-        <div class="control-group">
-            <label for="height">Висота (см):</label>
-            <input type="range" id="height" min="50" max="150" value="80" step="5">
-            <div class="value-display" id="height-value">80 см</div>
-        </div>
-        
-        <div class="control-group">
-            <label for="legs">Висота ніжок (см):</label>
-            <input type="range" id="legs" min="0" max="50" value="20" step="5">
-            <div class="value-display" id="legs-value">20 см</div>
-        </div>
+  <div id="canvas-container"></div>
+
+  <div id="controls">
+    <h2>Параметри печі</h2>
+
+    <div class="control-group">
+      <label for="width">Ширина (см):</label>
+      <input type="range" id="width" min="30" max="100" step="5">
+      <div class="value-display" id="width-value"></div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script>
-        // Ініціалізація сцени
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xf0f0f0);
-        
-        const camera = new THREE.PerspectiveCamera(
-            75,
-            window.innerWidth / window.innerHeight,
-            0.1,
-            1000
+    <div class="control-group">
+      <label for="depth">Глибина (см):</label>
+      <input type="range" id="depth" min="30" max="100" step="5">
+      <div class="value-display" id="depth-value"></div>
+    </div>
+
+    <div class="control-group">
+      <label for="height">Висота (см):</label>
+      <input type="range" id="height" min="50" max="150" step="5">
+      <div class="value-display" id="height-value"></div>
+    </div>
+
+    <div class="control-group">
+      <label for="legs">Висота ніжок (см):</label>
+      <input type="range" id="legs" min="0" max="50" step="5">
+      <div class="value-display" id="legs-value"></div>
+    </div>
+
+    <div class="control-group">
+      <label for="bodyColor">Колір корпусу:</label>
+      <input type="color" id="bodyColor">
+    </div>
+
+    <div class="control-group">
+      <label for="doorColor">Колір дверцят:</label>
+      <input type="color" id="doorColor">
+    </div>
+
+    <div class="control-group">
+      <label for="legColor">Колір ніжок:</label>
+      <input type="color" id="legColor">
+    </div>
+
+    <div class="control-group">
+      <label>
+        <input type="checkbox" id="fireEnabled">
+        Вогонь увімкнено
+      </label>
+    </div>
+
+    <div class="control-group">
+      <button id="resetConfig">Скинути налаштування</button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    const STORAGE_KEY = 'woodstove1Config';
+
+    const defaultConfig = {
+      width: 50,
+      depth: 50,
+      height: 80,
+      legs: 20,
+      bodyColor: '#333333',
+      doorColor: '#222222',
+      legColor: '#1a1a1a',
+      fireEnabled: true
+    };
+
+    function loadConfig() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? { ...defaultConfig, ...JSON.parse(raw) } : { ...defaultConfig };
+      } catch (e) {
+        return { ...defaultConfig };
+      }
+    }
+
+    function saveConfig(cfg) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+      } catch (e) {
+      }
+    }
+
+    let config = loadConfig();
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf0f0f0);
+
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    camera.position.set(2, 2, 3);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+    const ambientLight = new THREE.AmbientLight(0x404040, 2);
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(5, 10, 7);
+    directionalLight.castShadow = true;
+    scene.add(directionalLight);
+
+    const floorGeometry = new THREE.PlaneGeometry(10, 10);
+    const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
+    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = -0.5;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    let stoveGroup = new THREE.Group();
+    scene.add(stoveGroup);
+
+    function createStove(width, depth, height, legHeight, appearance) {
+      while (stoveGroup.children.length > 0) {
+        stoveGroup.remove(stoveGroup.children[0]);
+      }
+
+      const w = width / 100;
+      const d = depth / 100;
+      const h = height / 100;
+      const lh = legHeight / 100;
+
+      const metalMaterial = new THREE.MeshStandardMaterial({
+        color: new THREE.Color(appearance.bodyColor),
+        metalness: 0.8,
+        roughness: 0.2
+      });
+
+      const bodyGeometry = new THREE.BoxGeometry(w, h * 0.6, d);
+      const body = new THREE.Mesh(bodyGeometry, metalMaterial);
+      body.position.y = lh + (h * 0.6) / 2;
+      body.castShadow = true;
+      stoveGroup.add(body);
+
+      const topGeometry = new THREE.BoxGeometry(w * 0.7, h * 0.4, d * 0.7);
+      const top = new THREE.Mesh(topGeometry, metalMaterial);
+      top.position.y = lh + h * 0.6 + (h * 0.4) / 2;
+      top.castShadow = true;
+      stoveGroup.add(top);
+
+      const doorGeometry = new THREE.BoxGeometry(w * 0.6, h * 0.4, 0.02);
+      const doorMaterial = new THREE.MeshStandardMaterial({
+        color: new THREE.Color(appearance.doorColor)
+      });
+      const door = new THREE.Mesh(doorGeometry, doorMaterial);
+      door.position.set(0, lh + h * 0.3, d / 2 + 0.01);
+      door.castShadow = true;
+      stoveGroup.add(door);
+
+      const windowGeometry = new THREE.BoxGeometry(w * 0.3, h * 0.2, 0.03);
+      const windowMaterial = new THREE.MeshStandardMaterial({
+        color: 0xff6600,
+        emissive: 0xff3300,
+        emissiveIntensity: 0.6
+      });
+      const windowMesh = new THREE.Mesh(windowGeometry, windowMaterial);
+      windowMesh.position.set(0, lh + h * 0.3, d / 2 + 0.02);
+      windowMesh.name = 'fireWindow';
+      stoveGroup.add(windowMesh);
+
+      if (lh > 0) {
+        const legGeometry = new THREE.CylinderGeometry(0.02, 0.02, lh, 16);
+        const legMaterial = new THREE.MeshStandardMaterial({
+          color: new THREE.Color(appearance.legColor)
+        });
+
+        const positions = [
+          [w * 0.4, lh / 2, d * 0.4],
+          [-w * 0.4, lh / 2, d * 0.4],
+          [w * 0.4, lh / 2, -d * 0.4],
+          [-w * 0.4, lh / 2, -d * 0.4]
+        ];
+
+        positions.forEach(pos => {
+          const leg = new THREE.Mesh(legGeometry, legMaterial);
+          leg.position.set(...pos);
+          leg.castShadow = true;
+          stoveGroup.add(leg);
+        });
+      }
+    }
+
+    const controlsIds = ['width', 'depth', 'height', 'legs'];
+    document.getElementById('width').value  = config.width;
+    document.getElementById('depth').value  = config.depth;
+    document.getElementById('height').value = config.height;
+    document.getElementById('legs').value   = config.legs;
+
+    document.getElementById('width-value').textContent  = `${config.width} см`;
+    document.getElementById('depth-value').textContent  = `${config.depth} см`;
+    document.getElementById('height-value').textContent = `${config.height} см`;
+    document.getElementById('legs-value').textContent   = `${config.legs} см`;
+
+    document.getElementById('bodyColor').value = config.bodyColor;
+    document.getElementById('doorColor').value = config.doorColor;
+    document.getElementById('legColor').value  = config.legColor;
+
+    const fireCheckbox = document.getElementById('fireEnabled');
+    fireCheckbox.checked = config.fireEnabled;
+
+    const resetBtn = document.getElementById('resetConfig');
+    resetBtn.addEventListener('click', () => {
+      localStorage.removeItem(STORAGE_KEY);
+      config = { ...defaultConfig };
+
+      document.getElementById('width').value  = config.width;
+      document.getElementById('depth').value  = config.depth;
+      document.getElementById('height').value = config.height;
+      document.getElementById('legs').value   = config.legs;
+
+      document.getElementById('width-value').textContent  = `${config.width} см`;
+      document.getElementById('depth-value').textContent  = `${config.depth} см`;
+      document.getElementById('height-value').textContent = `${config.height} см`;
+      document.getElementById('legs-value').textContent   = `${config.legs} см`;
+
+      document.getElementById('bodyColor').value = config.bodyColor;
+      document.getElementById('doorColor').value = config.doorColor;
+      document.getElementById('legColor').value  = config.legColor;
+      fireCheckbox.checked = config.fireEnabled;
+
+      saveConfig(config);
+      createStove(
+        config.width,
+        config.depth,
+        config.height,
+        config.legs,
+        {
+          bodyColor: config.bodyColor,
+          doorColor: config.doorColor,
+          legColor: config.legColor
+        }
+      );
+    });
+
+    controlsIds.forEach(control => {
+      const slider = document.getElementById(control);
+      const display = document.getElementById(`${control}-value`);
+
+      slider.addEventListener('input', (e) => {
+        const value = parseInt(e.target.value);
+        display.textContent = `${value} см`;
+
+        config.width  = parseInt(document.getElementById('width').value);
+        config.depth  = parseInt(document.getElementById('depth').value);
+        config.height = parseInt(document.getElementById('height').value);
+        config.legs   = parseInt(document.getElementById('legs').value);
+
+        saveConfig(config);
+
+        createStove(
+          config.width,
+          config.depth,
+          config.height,
+          config.legs,
+          {
+            bodyColor: config.bodyColor,
+            doorColor: config.doorColor,
+            legColor: config.legColor
+          }
         );
-        camera.position.set(2, 2, 3);
-        camera.lookAt(0, 0, 0);
-        
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true;
-        document.getElementById('canvas-container').appendChild(renderer.domElement);
-        
-        // Освітлення
-        const ambientLight = new THREE.AmbientLight(0x404040, 2);
-        scene.add(ambientLight);
-        
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-        directionalLight.position.set(5, 10, 7);
-        directionalLight.castShadow = true;
-        scene.add(directionalLight);
-        
-        // Підлога
-        const floorGeometry = new THREE.PlaneGeometry(10, 10);
-        const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
-        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-        floor.rotation.x = -Math.PI / 2;
-        floor.position.y = -0.5;
-        floor.receiveShadow = true;
-        scene.add(floor);
-        
-        // Група для печі
-        let stoveGroup = new THREE.Group();
-        scene.add(stoveGroup);
-        
-        // Функція створення печі
-        function createStove(width, depth, height, legHeight) {
-            // Очистити попередню модель
-            while(stoveGroup.children.length > 0) {
-                stoveGroup.remove(stoveGroup.children[0]);
-            }
-            
-            // Конвертація см в метри для Three.js
-            const w = width / 100;
-            const d = depth / 100;
-            const h = height / 100;
-            const lh = legHeight / 100;
-            
-            // Матеріал для металу
-            const metalMaterial = new THREE.MeshStandardMaterial({
-                color: 0x333333,
-                metalness: 0.8,
-                roughness: 0.2
-            });
-            
-            // Основний корпус печі
-            const bodyGeometry = new THREE.BoxGeometry(w, h * 0.6, d);
-            const body = new THREE.Mesh(bodyGeometry, metalMaterial);
-            body.position.y = lh + (h * 0.6) / 2;
-            body.castShadow = true;
-            stoveGroup.add(body);
-            
-            // Верхня частина (труба)
-            const topGeometry = new THREE.BoxGeometry(w * 0.7, h * 0.4, d * 0.7);
-            const top = new THREE.Mesh(topGeometry, metalMaterial);
-            top.position.y = lh + h * 0.6 + (h * 0.4) / 2;
-            top.castShadow = true;
-            stoveGroup.add(top);
-            
-            // Дверцята топки
-            const doorGeometry = new THREE.BoxGeometry(w * 0.6, h * 0.4, 0.02);
-            const doorMaterial = new THREE.MeshStandardMaterial({ color: 0x222222 });
-            const door = new THREE.Mesh(doorGeometry, doorMaterial);
-            door.position.set(0, lh + h * 0.3, d / 2 + 0.01);
-            door.castShadow = true;
-            stoveGroup.add(door);
-            
-            // Вікно в дверцятах
-            const windowGeometry = new THREE.BoxGeometry(w * 0.3, h * 0.2, 0.03);
-            const windowMaterial = new THREE.MeshStandardMaterial({
-                color: 0xff6600,
-                emissive: 0xff3300,
-                emissiveIntensity: 0.5
-            });
-            const window = new THREE.Mesh(windowGeometry, windowMaterial);
-            window.position.set(0, lh + h * 0.3, d / 2 + 0.02);
-            stoveGroup.add(window);
-            
-            // Ніжки
-            if (lh > 0) {
-                const legGeometry = new THREE.CylinderGeometry(0.02, 0.02, lh, 16);
-                const legMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a });
-                
-                const positions = [
-                    [w * 0.4, lh / 2, d * 0.4],
-                    [-w * 0.4, lh / 2, d * 0.4],
-                    [w * 0.4, lh / 2, -d * 0.4],
-                    [-w * 0.4, lh / 2, -d * 0.4]
-                ];
-                
-                positions.forEach(pos => {
-                    const leg = new THREE.Mesh(legGeometry, legMaterial);
-                    leg.position.set(...pos);
-                    leg.castShadow = true;
-                    stoveGroup.add(leg);
-                });
-            }
-        }
-        
-        // Початкове створення печі
-        createStove(50, 50, 80, 20);
-        
-        // Обробники подій для слайдерів
-        const controls = ['width', 'depth', 'height', 'legs'];
-        controls.forEach(control => {
-            const slider = document.getElementById(control);
-            const display = document.getElementById(`${control}-value`);
-            
-            slider.addEventListener('input', (e) => {
-                const value = e.target.value;
-                display.textContent = `${value} см`;
-                
-                const width = parseInt(document.getElementById('width').value);
-                const depth = parseInt(document.getElementById('depth').value);
-                const height = parseInt(document.getElementById('height').value);
-                const legs = parseInt(document.getElementById('legs').value);
-                
-                createStove(width, depth, height, legs);
-            });
-        });
-        
-        // Обертання камери мишею
-        let isDragging = false;
-        let previousMousePosition = { x: 0, y: 0 };
-        let cameraAngle = { x: 0, y: 0 };
-        const cameraDistance = 3;
-        
-        renderer.domElement.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            previousMousePosition = { x: e.clientX, y: e.clientY };
-        });
-        
-        renderer.domElement.addEventListener('mousemove', (e) => {
-            if (isDragging) {
-                const deltaX = e.clientX - previousMousePosition.x;
-                const deltaY = e.clientY - previousMousePosition.y;
-                
-                cameraAngle.y += deltaX * 0.005;
-                cameraAngle.x += deltaY * 0.005;
-                
-                cameraAngle.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, cameraAngle.x));
-                
-                camera.position.x = cameraDistance * Math.cos(cameraAngle.x) * Math.sin(cameraAngle.y);
-                camera.position.y = cameraDistance * Math.sin(cameraAngle.x) + 1;
-                camera.position.z = cameraDistance * Math.cos(cameraAngle.x) * Math.cos(cameraAngle.y);
-                camera.lookAt(0, 1, 0);
-                
-                previousMousePosition = { x: e.clientX, y: e.clientY };
-            }
-        });
-        
-        renderer.domElement.addEventListener('mouseup', () => {
-            isDragging = false;
-        });
-        
-        // Зум колесом миші
-        renderer.domElement.addEventListener('wheel', (e) => {
-            e.preventDefault();
-            const zoomSpeed = 0.1;
-            const currentDistance = camera.position.distanceTo(new THREE.Vector3(0, 1, 0));
-            const newDistance = currentDistance + (e.deltaY > 0 ? zoomSpeed : -zoomSpeed);
-            
-            if (newDistance > 1 && newDistance < 10) {
-                const ratio = newDistance / currentDistance;
-                camera.position.multiplyScalar(ratio);
-            }
-        });
-        
-        // Адаптивність
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-        
-        // Анімація
-        function animate() {
-            requestAnimationFrame(animate);
-            renderer.render(scene, camera);
-        }
-        animate();
-    </script>
+      });
+    });
+
+    ['bodyColor', 'doorColor', 'legColor'].forEach(id => {
+      const input = document.getElementById(id);
+      input.addEventListener('input', (e) => {
+        config[id] = e.target.value;
+        saveConfig(config);
+        createStove(
+          config.width,
+          config.depth,
+          config.height,
+          config.legs,
+          {
+            bodyColor: config.bodyColor,
+            doorColor: config.doorColor,
+            legColor: config.legColor
+          }
+        );
+      });
+    });
+
+    fireCheckbox.addEventListener('change', (e) => {
+      config.fireEnabled = e.target.checked;
+      saveConfig(config);
+    });
+
+    createStove(
+      config.width,
+      config.depth,
+      config.height,
+      config.legs,
+      {
+        bodyColor: config.bodyColor,
+        doorColor: config.doorColor,
+        legColor: config.legColor
+      }
+    );
+
+    let isDragging = false;
+    let previousMousePosition = { x: 0, y: 0 };
+    let cameraAngle = { x: 0, y: 0 };
+    const cameraDistance = 3;
+
+    renderer.domElement.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      previousMousePosition = { x: e.clientX, y: e.clientY };
+    });
+
+    renderer.domElement.addEventListener('mousemove', (e) => {
+      if (isDragging) {
+        const deltaX = e.clientX - previousMousePosition.x;
+        const deltaY = e.clientY - previousMousePosition.y;
+
+        cameraAngle.y += deltaX * 0.005;
+        cameraAngle.x += deltaY * 0.005;
+
+        cameraAngle.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, cameraAngle.x));
+
+        camera.position.x = cameraDistance * Math.cos(cameraAngle.x) * Math.sin(cameraAngle.y);
+        camera.position.y = cameraDistance * Math.sin(cameraAngle.x) + 1;
+        camera.position.z = cameraDistance * Math.cos(cameraAngle.x) * Math.cos(cameraAngle.y);
+        camera.lookAt(0, 1, 0);
+
+        previousMousePosition = { x: e.clientX, y: e.clientY };
+      }
+    });
+
+    renderer.domElement.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+
+    renderer.domElement.addEventListener('mouseleave', () => {
+      isDragging = false;
+    });
+
+    renderer.domElement.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const zoomSpeed = 0.1;
+      const target = new THREE.Vector3(0, 1, 0);
+      const currentDistance = camera.position.distanceTo(target);
+      const newDistance = currentDistance + (e.deltaY > 0 ? zoomSpeed : -zoomSpeed);
+
+      if (newDistance > 1 && newDistance < 10) {
+        const dir = camera.position.clone().sub(target).normalize();
+        const newPos = dir.multiplyScalar(newDistance).add(target);
+        camera.position.copy(newPos);
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const elapsed = clock.getElapsedTime();
+      const fireWindow = stoveGroup.getObjectByName('fireWindow');
+
+      if (fireWindow && fireWindow.material && config.fireEnabled) {
+        const baseIntensity = 0.6;
+        const amplitude = 0.3;
+        const speed = 5.0;
+        fireWindow.material.emissiveIntensity =
+          baseIntensity + Math.sin(elapsed * speed) * amplitude;
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+  </script>
 </body>
 </html>
