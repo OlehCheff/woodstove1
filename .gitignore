@@ -1,0 +1,30 @@
+# Системні файли
+.DS_Store
+Thumbs.db
+
+# Редактори та IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Залежності
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Тимчасові файли
+*.log
+*.tmp
+*.temp
+
+# Build файли
+dist/
+build/
+*.min.js
+*.min.css
+
+# Інше
+.env
+.env.local
