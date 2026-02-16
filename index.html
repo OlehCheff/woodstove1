@@ -3,420 +3,996 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D Модель дров'яної печі</title>
+  <title>3D Модель дров'яної печі — Sprint 1</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      font-family: Arial, sans-serif;
-      overflow: hidden;
-    }
-    #canvas-container {
-      width: 100vw;
-      height: 100vh;
-      position: relative;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; overflow: hidden; }
+    #canvas-container { width: 100vw; height: 100vh; position: relative; }
     #controls {
       position: absolute;
-      top: 20px;
-      left: 20px;
-      background: rgba(255, 255, 255, 0.9);
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-      max-width: 300px;
-      max-height: 90vh;
+      top: 16px;
+      left: 16px;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 16px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      max-width: 340px;
+      max-height: calc(100vh - 32px);
       overflow-y: auto;
     }
-    .control-group {
-      margin-bottom: 15px;
-    }
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-      font-size: 14px;
-    }
-    input[type="range"] {
-      width: 100%;
-    }
-    .value-display {
-      font-size: 12px;
-      color: #666;
-      margin-top: 2px;
-    }
-    h2 {
-      font-size: 18px;
-      margin-bottom: 15px;
-    }
+    h2 { font-size: 18px; margin-bottom: 10px; }
+    h3 { font-size: 14px; margin: 14px 0 8px; color: #333; }
+    .hint { font-size: 12px; color: #666; margin-bottom: 10px; }
+    .control-group { margin-bottom: 10px; }
+    label { display: block; margin-bottom: 4px; font-weight: bold; font-size: 13px; }
+    input[type="range"] { width: 100%; }
+    .value-display { font-size: 12px; color: #555; margin-top: 2px; }
+    .btn-row { margin-top: 14px; display: flex; gap: 8px; }
+    button { padding: 8px 10px; border: none; border-radius: 6px; background: #2f6fed; color: #fff; cursor: pointer; }
+    button.secondary { background: #6b7280; }
   </style>
 </head>
 <body>
   <div id="canvas-container"></div>
 
   <div id="controls">
-    <h2>Параметри печі</h2>
+    <h2>Sprint 5 — Режими роботи й полум’я</h2>
+    <p class="hint">Масштаб: <strong>1 од. = 1 см</strong>. Зміни застосовуються одразу.</p>
 
+    <h3>Габарити</h3>
+    <div class="control-group"><label for="widthCm">Ширина (см)</label><input type="range" id="widthCm" min="40" max="140" step="1"><div class="value-display" id="widthCm-value"></div></div>
+    <div class="control-group"><label for="depthCm">Глибина (см)</label><input type="range" id="depthCm" min="35" max="120" step="1"><div class="value-display" id="depthCm-value"></div></div>
+    <div class="control-group"><label for="heightCm">Висота корпусу (см)</label><input type="range" id="heightCm" min="50" max="180" step="1"><div class="value-display" id="heightCm-value"></div></div>
+    <div class="control-group"><label for="legHeightCm">Висота ніжок (см)</label><input type="range" id="legHeightCm" min="0" max="40" step="1"><div class="value-display" id="legHeightCm-value"></div></div>
+
+    <h3>Матеріали</h3>
+    <div class="control-group"><label for="steelThicknessMm">Товщина сталі (мм)</label><input type="range" id="steelThicknessMm" min="3" max="8" step="1"><div class="value-display" id="steelThicknessMm-value"></div></div>
+    <div class="control-group"><label for="firebrickThicknessCm">Товщина шамоту (см)</label><input type="range" id="firebrickThicknessCm" min="2" max="8" step="0.5"><div class="value-display" id="firebrickThicknessCm-value"></div></div>
+
+    <h3>Sprint 3 — Бафль</h3>
+    <div class="control-group"><label for="baffleHeightCm">Висота бафля від дна (см)</label><input type="range" id="baffleHeightCm" min="20" max="120" step="1"><div class="value-display" id="baffleHeightCm-value"></div></div>
+    <div class="control-group"><label for="baffleAngleDeg">Кут бафля (°)</label><input type="range" id="baffleAngleDeg" min="-20" max="30" step="1"><div class="value-display" id="baffleAngleDeg-value"></div></div>
+    <div class="control-group"><label for="baffleFrontGapCm">Передній зазор бафля (см)</label><input type="range" id="baffleFrontGapCm" min="2" max="15" step="0.5"><div class="value-display" id="baffleFrontGapCm-value"></div></div>
+
+    <h3>Sprint 3 — Первинне повітря</h3>
+    <div class="control-group"><label for="primaryHoleCount">К-сть отворів</label><input type="range" id="primaryHoleCount" min="3" max="14" step="1"><div class="value-display" id="primaryHoleCount-value"></div></div>
+    <div class="control-group"><label for="primaryHoleDiameterCm">Діаметр отвору (см)</label><input type="range" id="primaryHoleDiameterCm" min="0.6" max="2.5" step="0.1"><div class="value-display" id="primaryHoleDiameterCm-value"></div></div>
+    <div class="control-group"><label for="primaryHoleSpacingCm">Крок отворів (см)</label><input type="range" id="primaryHoleSpacingCm" min="2" max="8" step="0.5"><div class="value-display" id="primaryHoleSpacingCm-value"></div></div>
+    <div class="control-group"><label for="primaryAirOpenPct">Задвижка первинного повітря (%)</label><input type="range" id="primaryAirOpenPct" min="0" max="100" step="1"><div class="value-display" id="primaryAirOpenPct-value"></div></div>
+
+    <h3>Sprint 3 — Вторинне повітря</h3>
+    <div class="control-group"><label for="secondaryHoleCount">К-сть перфорацій</label><input type="range" id="secondaryHoleCount" min="4" max="24" step="1"><div class="value-display" id="secondaryHoleCount-value"></div></div>
+    <div class="control-group"><label for="secondaryHoleDiameterCm">Діаметр перфорації (см)</label><input type="range" id="secondaryHoleDiameterCm" min="0.6" max="0.8" step="0.1"><div class="value-display" id="secondaryHoleDiameterCm-value"></div></div>
+    <div class="control-group"><label for="secondaryHoleSpacingCm">Крок перфорацій (см)</label><input type="range" id="secondaryHoleSpacingCm" min="1.5" max="4" step="0.1"><div class="value-display" id="secondaryHoleSpacingCm-value"></div></div>
+
+    <h3>Димохід та дверця (базові параметри)</h3>
+    <div class="control-group"><label for="chimneyDiameterCm">Діаметр димоходу (см)</label><input type="range" id="chimneyDiameterCm" min="10" max="25" step="0.5"><div class="value-display" id="chimneyDiameterCm-value"></div></div>
+    <div class="control-group"><label for="doorWidthCm">Ширина дверцят (см)</label><input type="range" id="doorWidthCm" min="20" max="70" step="1"><div class="value-display" id="doorWidthCm-value"></div></div>
+    <div class="control-group"><label for="doorHeightCm">Висота дверцят (см)</label><input type="range" id="doorHeightCm" min="20" max="70" step="1"><div class="value-display" id="doorHeightCm-value"></div></div>
+    <div class="control-group"><label for="glassInsetCm">Відступ скла від рамки (см)</label><input type="range" id="glassInsetCm" min="1" max="6" step="0.5"><div class="value-display" id="glassInsetCm-value"></div></div>
+    <div class="control-group"><label for="doorFrameThicknessCm">Товщина рамки дверцят (см)</label><input type="range" id="doorFrameThicknessCm" min="1" max="6" step="0.5"><div class="value-display" id="doorFrameThicknessCm-value"></div></div>
+    <div class="control-group"><label for="doorOpenAngleDeg">Кут відкриття дверцят (°)</label><input type="range" id="doorOpenAngleDeg" min="30" max="120" step="1"><div class="value-display" id="doorOpenAngleDeg-value"></div></div>
+
+    <h3>Sprint 4 — Air wash і видимість</h3>
+    <div class="control-group"><label for="airWashGapCm">Air wash щілина (см)</label><input type="range" id="airWashGapCm" min="0.5" max="3" step="0.1"><div class="value-display" id="airWashGapCm-value"></div></div>
+    <div class="control-group"><label><input type="checkbox" id="showFirebrick"> Показувати шамот</label></div>
+    <div class="control-group"><label><input type="checkbox" id="showBaffle"> Показувати бафль</label></div>
+    <div class="control-group"><label><input type="checkbox" id="showAirChannels"> Показувати повітряні канали</label></div>
+    <div class="control-group"><label><input type="checkbox" id="showChimney"> Показувати димохід</label></div>
+    <div class="control-group"><label for="explodeDistanceCm">Explode distance (см)</label><input type="range" id="explodeDistanceCm" min="5" max="40" step="1"><div class="value-display" id="explodeDistanceCm-value"></div></div>
+
+
+    <h3>Sprint 5 — Режими роботи</h3>
     <div class="control-group">
-      <label for="width">Ширина (см):</label>
-      <input type="range" id="width" min="30" max="100" step="5">
-      <div class="value-display" id="width-value"></div>
+      <label for="operationMode">Режим роботи</label>
+      <select id="operationMode" style="width:100%; padding:6px; border-radius:6px; border:1px solid #bbb;">
+        <option value="start-up">start-up</option>
+        <option value="low">low</option>
+        <option value="medium">medium</option>
+        <option value="high">high</option>
+        <option value="overnight">overnight</option>
+      </select>
+      <div class="value-display" id="operationMode-value"></div>
     </div>
 
+
+    <h3>Sprint 6 — Температура і PhysicsModel</h3>
     <div class="control-group">
-      <label for="depth">Глибина (см):</label>
-      <input type="range" id="depth" min="30" max="100" step="5">
-      <div class="value-display" id="depth-value"></div>
+      <label>Оціночний КПД</label>
+      <div class="value-display" id="physics-efficiency">—</div>
+    </div>
+    <div class="control-group">
+      <label>Оціночна потужність (кВт)</label>
+      <div class="value-display" id="physics-kw">—</div>
+    </div>
+    <div class="control-group">
+      <label>Орієнтовний час горіння (год)</label>
+      <div class="value-display" id="physics-burn-time">—</div>
+    </div>
+    <div class="control-group">
+      <label>Таблиця проблем / попередження</label>
+      <ul id="physics-warnings" style="padding-left:18px; font-size:12px; color:#444;"></ul>
     </div>
 
-    <div class="control-group">
-      <label for="height">Висота (см):</label>
-      <input type="range" id="height" min="50" max="150" step="5">
-      <div class="value-display" id="height-value"></div>
-    </div>
+    <h3>Камера</h3>
+    <div class="control-group"><label for="cameraFov">FOV камери (°)</label><input type="range" id="cameraFov" min="35" max="85" step="1"><div class="value-display" id="cameraFov-value"></div></div>
+    <div class="control-group"><label for="cameraDistance">Відстань камери</label><input type="range" id="cameraDistance" min="140" max="500" step="5"><div class="value-display" id="cameraDistance-value"></div></div>
+    <div class="control-group"><label for="cameraTargetYCm">Висота точки фокусу (см)</label><input type="range" id="cameraTargetYCm" min="20" max="180" step="1"><div class="value-display" id="cameraTargetYCm-value"></div></div>
 
-    <div class="control-group">
-      <label for="legs">Висота ніжок (см):</label>
-      <input type="range" id="legs" min="0" max="50" step="5">
-      <div class="value-display" id="legs-value"></div>
-    </div>
-
-    <div class="control-group">
-      <label for="bodyColor">Колір корпусу:</label>
-      <input type="color" id="bodyColor">
-    </div>
-
-    <div class="control-group">
-      <label for="doorColor">Колір дверцят:</label>
-      <input type="color" id="doorColor">
-    </div>
-
-    <div class="control-group">
-      <label for="legColor">Колір ніжок:</label>
-      <input type="color" id="legColor">
-    </div>
-
-    <div class="control-group">
-      <label>
-        <input type="checkbox" id="fireEnabled">
-        Вогонь увімкнено
-      </label>
-    </div>
-
-    <div class="control-group">
-      <button id="resetConfig">Скинути налаштування</button>
+    <div class="btn-row">
+      <button id="toggleDoor">Відкрити дверця</button>
+      <button id="toggleExplode">Explode view</button>
+      <button id="resetConfig" class="secondary">Скинути</button>
     </div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="./physics-model.js"></script>
   <script>
-    const STORAGE_KEY = 'woodstove1Config';
+    const STORAGE_KEY = 'woodstove1ConfigV2';
 
     const defaultConfig = {
-      width: 50,
-      depth: 50,
-      height: 80,
-      legs: 20,
-      bodyColor: '#333333',
-      doorColor: '#222222',
-      legColor: '#1a1a1a',
-      fireEnabled: true
+      dimensions: {
+        widthCm: 70,
+        depthCm: 55,
+        heightCm: 95,
+        legHeightCm: 15
+      },
+      materials: {
+        steelThicknessMm: 5,
+        firebrickThicknessCm: 4
+      },
+      chimney: {
+        diameterCm: 15,
+        heightCm: 35
+      },
+      baffle: {
+        heightCm: 58,
+        angleDeg: 6,
+        frontGapCm: 6
+      },
+      primaryAir: {
+        holeCount: 8,
+        holeDiameterCm: 1.2,
+        holeSpacingCm: 4,
+        openPct: 45
+      },
+      secondaryAir: {
+        holeCount: 10,
+        holeDiameterCm: 0.7,
+        holeSpacingCm: 2.4
+      },
+      airWash: {
+        gapCm: 1.2
+      },
+      visibility: {
+        firebrick: true,
+        baffle: true,
+        airChannels: true,
+        chimney: true
+      },
+      explode: {
+        enabled: false,
+        distanceCm: 18
+      },
+      operation: {
+        mode: "medium",
+        secondaryAirPct: 55,
+        flameIntensity: 0.62
+      },
+      door: {
+        widthCm: 42,
+        heightCm: 38,
+        frameThicknessCm: 3,
+        glassInsetCm: 2,
+        openAngleDeg: 70,
+        isOpen: false
+      },
+      camera: {
+        fov: 55,
+        distance: 260,
+        targetY: 55
+      },
+      colors: {
+        steel: '#3a3d43',
+        floor: '#777777'
+      }
     };
+
+    const controlMap = {
+      widthCm: 'dimensions.widthCm',
+      depthCm: 'dimensions.depthCm',
+      heightCm: 'dimensions.heightCm',
+      legHeightCm: 'dimensions.legHeightCm',
+      steelThicknessMm: 'materials.steelThicknessMm',
+      firebrickThicknessCm: 'materials.firebrickThicknessCm',
+      baffleHeightCm: 'baffle.heightCm',
+      baffleAngleDeg: 'baffle.angleDeg',
+      baffleFrontGapCm: 'baffle.frontGapCm',
+      primaryHoleCount: 'primaryAir.holeCount',
+      primaryHoleDiameterCm: 'primaryAir.holeDiameterCm',
+      primaryHoleSpacingCm: 'primaryAir.holeSpacingCm',
+      primaryAirOpenPct: 'primaryAir.openPct',
+      secondaryHoleCount: 'secondaryAir.holeCount',
+      secondaryHoleDiameterCm: 'secondaryAir.holeDiameterCm',
+      secondaryHoleSpacingCm: 'secondaryAir.holeSpacingCm',
+      airWashGapCm: 'airWash.gapCm',
+      explodeDistanceCm: 'explode.distanceCm',
+      operationMode: 'operation.mode',
+      chimneyDiameterCm: 'chimney.diameterCm',
+      doorWidthCm: 'door.widthCm',
+      doorHeightCm: 'door.heightCm',
+      glassInsetCm: 'door.glassInsetCm',
+      doorFrameThicknessCm: 'door.frameThicknessCm',
+      doorOpenAngleDeg: 'door.openAngleDeg',
+      cameraFov: 'camera.fov',
+      cameraDistance: 'camera.distance',
+      cameraTargetYCm: 'camera.targetY'
+    };
+
+    const unitByControl = {
+      cameraFov: '°',
+      doorOpenAngleDeg: '°',
+      baffleAngleDeg: '°',
+      primaryAirOpenPct: '%',
+      steelThicknessMm: ' мм',
+      explodeDistanceCm: ' см',
+      operationMode: '',
+      cameraDistance: ' см',
+      cameraTargetYCm: ' см'
+    };
+
+    const OPERATION_PRESETS = {
+      'start-up': { primaryAirOpenPct: 95, secondaryAirPct: 85, airWashGapCm: 2.6, flameIntensity: 1.0, flameColor: 0xffb347 },
+      'low': { primaryAirOpenPct: 28, secondaryAirPct: 35, airWashGapCm: 1.0, flameIntensity: 0.35, flameColor: 0xff8844 },
+      'medium': { primaryAirOpenPct: 52, secondaryAirPct: 55, airWashGapCm: 1.4, flameIntensity: 0.62, flameColor: 0xffa04d },
+      'high': { primaryAirOpenPct: 82, secondaryAirPct: 78, airWashGapCm: 2.2, flameIntensity: 0.88, flameColor: 0xffc261 },
+      'overnight': { primaryAirOpenPct: 15, secondaryAirPct: 24, airWashGapCm: 0.8, flameIntensity: 0.22, flameColor: 0xff6a33 }
+    };
+
+    function deepMerge(base, patch) {
+      const output = Array.isArray(base) ? [...base] : { ...base };
+      Object.keys(patch || {}).forEach((key) => {
+        if (patch[key] && typeof patch[key] === 'object' && !Array.isArray(patch[key])) {
+          output[key] = deepMerge(base[key] || {}, patch[key]);
+        } else {
+          output[key] = patch[key];
+        }
+      });
+      return output;
+    }
+
+    function getByPath(obj, path) {
+      return path.split('.').reduce((acc, part) => acc[part], obj);
+    }
+
+    function setByPath(obj, path, value) {
+      const keys = path.split('.');
+      const last = keys.pop();
+      const target = keys.reduce((acc, part) => acc[part], obj);
+      target[last] = value;
+    }
 
     function loadConfig() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? { ...defaultConfig, ...JSON.parse(raw) } : { ...defaultConfig };
+        return raw ? deepMerge(defaultConfig, JSON.parse(raw)) : deepMerge(defaultConfig, {});
       } catch (e) {
-        return { ...defaultConfig };
+        return deepMerge(defaultConfig, {});
       }
+    }
+
+
+    function normalizeConfig(cfg) {
+      cfg.dimensions.widthCm = Math.max(40, Math.min(140, cfg.dimensions.widthCm));
+      cfg.dimensions.depthCm = Math.max(35, Math.min(120, cfg.dimensions.depthCm));
+      cfg.dimensions.heightCm = Math.max(50, Math.min(180, cfg.dimensions.heightCm));
+      cfg.dimensions.legHeightCm = Math.max(0, Math.min(40, cfg.dimensions.legHeightCm));
+
+      if (cfg.materials.steelThicknessMm == null && cfg.materials.steelThicknessCm != null) {
+        cfg.materials.steelThicknessMm = cfg.materials.steelThicknessCm * 10;
+      }
+      cfg.materials.steelThicknessMm = Math.max(3, Math.min(8, Math.round(cfg.materials.steelThicknessMm)));
+      cfg.materials.firebrickThicknessCm = Math.max(2, Math.min(8, cfg.materials.firebrickThicknessCm));
+
+      cfg.chimney.diameterCm = Math.max(10, Math.min(25, cfg.chimney.diameterCm));
+
+      cfg.baffle.heightCm = Math.max(20, Math.min(120, cfg.baffle.heightCm));
+      cfg.baffle.angleDeg = Math.max(-20, Math.min(30, cfg.baffle.angleDeg));
+      cfg.baffle.frontGapCm = Math.max(2, Math.min(15, cfg.baffle.frontGapCm));
+
+      cfg.primaryAir.holeCount = Math.max(3, Math.min(14, Math.round(cfg.primaryAir.holeCount)));
+      cfg.primaryAir.holeDiameterCm = Math.max(0.6, Math.min(2.5, cfg.primaryAir.holeDiameterCm));
+      cfg.primaryAir.holeSpacingCm = Math.max(2, Math.min(8, cfg.primaryAir.holeSpacingCm));
+      cfg.primaryAir.openPct = Math.max(0, Math.min(100, cfg.primaryAir.openPct));
+
+      cfg.secondaryAir.holeCount = Math.max(4, Math.min(24, Math.round(cfg.secondaryAir.holeCount)));
+      cfg.secondaryAir.holeDiameterCm = Math.max(0.6, Math.min(0.8, cfg.secondaryAir.holeDiameterCm));
+      cfg.secondaryAir.holeSpacingCm = Math.max(1.5, Math.min(4, cfg.secondaryAir.holeSpacingCm));
+
+      cfg.airWash.gapCm = Math.max(0.5, Math.min(3, cfg.airWash.gapCm));
+
+      cfg.visibility.firebrick = Boolean(cfg.visibility.firebrick);
+      cfg.visibility.baffle = Boolean(cfg.visibility.baffle);
+      cfg.visibility.airChannels = Boolean(cfg.visibility.airChannels);
+      cfg.visibility.chimney = Boolean(cfg.visibility.chimney);
+
+      cfg.explode.enabled = Boolean(cfg.explode.enabled);
+      cfg.explode.distanceCm = Math.max(5, Math.min(40, cfg.explode.distanceCm));
+
+      if (!OPERATION_PRESETS[cfg.operation.mode]) cfg.operation.mode = 'medium';
+      cfg.operation.secondaryAirPct = Math.max(0, Math.min(100, cfg.operation.secondaryAirPct));
+      cfg.operation.flameIntensity = Math.max(0, Math.min(1, cfg.operation.flameIntensity));
+
+      cfg.door.widthCm = Math.max(20, Math.min(70, cfg.door.widthCm));
+      cfg.door.heightCm = Math.max(20, Math.min(70, cfg.door.heightCm));
+      cfg.door.frameThicknessCm = Math.max(1, Math.min(6, cfg.door.frameThicknessCm));
+      cfg.door.glassInsetCm = Math.max(1, Math.min(6, cfg.door.glassInsetCm));
+      cfg.door.openAngleDeg = Math.max(30, Math.min(120, cfg.door.openAngleDeg));
+      cfg.door.isOpen = Boolean(cfg.door.isOpen);
+
+      cfg.camera.fov = Math.max(35, Math.min(85, cfg.camera.fov));
+      cfg.camera.distance = Math.max(140, Math.min(500, cfg.camera.distance));
+      cfg.camera.targetY = Math.max(20, Math.min(180, cfg.camera.targetY));
+
+      return cfg;
     }
 
     function saveConfig(cfg) {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
-      } catch (e) {
-      }
+      } catch (e) {}
     }
 
-    let config = loadConfig();
+    let config = normalizeConfig(loadConfig());
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf0f0f0);
+    scene.background = new THREE.Color(0xeeeeee);
 
     const camera = new THREE.PerspectiveCamera(
-      75,
+      config.camera.fov,
       window.innerWidth / window.innerHeight,
       0.1,
-      1000
+      3000
     );
-    camera.position.set(2, 2, 3);
-    camera.lookAt(0, 0, 0);
+    camera.position.set(180, 160, 200);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
     document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-    const ambientLight = new THREE.AmbientLight(0x404040, 2);
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.minDistance = 80;
+    controls.maxDistance = 700;
+    controls.target.set(0, config.camera.targetY, 0);
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(5, 10, 7);
-    directionalLight.castShadow = true;
-    scene.add(directionalLight);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 0.9);
+    keyLight.position.set(150, 220, 130);
+    keyLight.castShadow = true;
+    keyLight.shadow.mapSize.width = 2048;
+    keyLight.shadow.mapSize.height = 2048;
+    scene.add(keyLight);
 
-    const floorGeometry = new THREE.PlaneGeometry(10, 10);
-    const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
-    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+    const fillLight = new THREE.DirectionalLight(0xffffff, 0.4);
+    fillLight.position.set(-120, 100, -140);
+    scene.add(fillLight);
+
+    const floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(1200, 1200),
+      new THREE.MeshStandardMaterial({ color: new THREE.Color(defaultConfig.colors.floor), roughness: 0.9 })
+    );
     floor.rotation.x = -Math.PI / 2;
-    floor.position.y = -0.5;
+    floor.position.y = 0;
     floor.receiveShadow = true;
     scene.add(floor);
+
+    const grid = new THREE.GridHelper(1200, 120, 0x444444, 0x999999);
+    grid.position.y = 0.05;
+    scene.add(grid);
+
+    const axes = new THREE.AxesHelper(80);
+    scene.add(axes);
 
     let stoveGroup = new THREE.Group();
     scene.add(stoveGroup);
 
-    function createStove(width, depth, height, legHeight, appearance) {
-      while (stoveGroup.children.length > 0) {
-        stoveGroup.remove(stoveGroup.children[0]);
-      }
+    let doorPivotRef = null;
+    let doorCurrentAngle = 0;
+    let doorTargetAngle = 0;
+    let primaryShutterRef = null;
+    let primaryShutterXCurrent = 0;
+    let primaryShutterXTarget = 0;
+    let nodeRefs = {};
+    let explodeFactorCurrent = 0;
+    let explodeFactorTarget = 0;
+    let flameGroupRef = null;
+    let flameCoreRef = null;
+    let flameOuterRef = null;
+    let flameSparkRefs = [];
 
-      const w = width / 100;
-      const d = depth / 100;
-      const h = height / 100;
-      const lh = legHeight / 100;
+    function makePlate(width, height, depth, material) {
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      return mesh;
+    }
 
-      const metalMaterial = new THREE.MeshStandardMaterial({
-        color: new THREE.Color(appearance.bodyColor),
-        metalness: 0.8,
-        roughness: 0.2
-      });
 
-      const bodyGeometry = new THREE.BoxGeometry(w, h * 0.6, d);
-      const body = new THREE.Mesh(bodyGeometry, metalMaterial);
-      body.position.y = lh + (h * 0.6) / 2;
-      body.castShadow = true;
-      stoveGroup.add(body);
-
-      const topGeometry = new THREE.BoxGeometry(w * 0.7, h * 0.4, d * 0.7);
-      const top = new THREE.Mesh(topGeometry, metalMaterial);
-      top.position.y = lh + h * 0.6 + (h * 0.4) / 2;
-      top.castShadow = true;
-      stoveGroup.add(top);
-
-      const doorGeometry = new THREE.BoxGeometry(w * 0.6, h * 0.4, 0.02);
-      const doorMaterial = new THREE.MeshStandardMaterial({
-        color: new THREE.Color(appearance.doorColor)
-      });
-      const door = new THREE.Mesh(doorGeometry, doorMaterial);
-      door.position.set(0, lh + h * 0.3, d / 2 + 0.01);
-      door.castShadow = true;
-      stoveGroup.add(door);
-
-      const windowGeometry = new THREE.BoxGeometry(w * 0.3, h * 0.2, 0.03);
-      const windowMaterial = new THREE.MeshStandardMaterial({
-        color: 0xff6600,
-        emissive: 0xff3300,
-        emissiveIntensity: 0.6
-      });
-      const windowMesh = new THREE.Mesh(windowGeometry, windowMaterial);
-      windowMesh.position.set(0, lh + h * 0.3, d / 2 + 0.02);
-      windowMesh.name = 'fireWindow';
-      stoveGroup.add(windowMesh);
-
-      if (lh > 0) {
-        const legGeometry = new THREE.CylinderGeometry(0.02, 0.02, lh, 16);
-        const legMaterial = new THREE.MeshStandardMaterial({
-          color: new THREE.Color(appearance.legColor)
-        });
-
-        const positions = [
-          [w * 0.4, lh / 2, d * 0.4],
-          [-w * 0.4, lh / 2, d * 0.4],
-          [w * 0.4, lh / 2, -d * 0.4],
-          [-w * 0.4, lh / 2, -d * 0.4]
-        ];
-
-        positions.forEach(pos => {
-          const leg = new THREE.Mesh(legGeometry, legMaterial);
-          leg.position.set(...pos);
-          leg.castShadow = true;
-          stoveGroup.add(leg);
-        });
+    function storeBasePosition(node) {
+      if (node) {
+        node.userData.basePosition = node.position.clone();
       }
     }
 
-    const controlsIds = ['width', 'depth', 'height', 'legs'];
-    document.getElementById('width').value  = config.width;
-    document.getElementById('depth').value  = config.depth;
-    document.getElementById('height').value = config.height;
-    document.getElementById('legs').value   = config.legs;
+    function applyVisibilityFromConfig() {
+      if (nodeRefs.firebrick) nodeRefs.firebrick.visible = config.visibility.firebrick;
+      if (nodeRefs.baffle) nodeRefs.baffle.visible = config.visibility.baffle;
+      if (nodeRefs.airSystems) nodeRefs.airSystems.visible = config.visibility.airChannels;
+      if (nodeRefs.chimney) nodeRefs.chimney.visible = config.visibility.chimney;
+    }
 
-    document.getElementById('width-value').textContent  = `${config.width} см`;
-    document.getElementById('depth-value').textContent  = `${config.depth} см`;
-    document.getElementById('height-value').textContent = `${config.height} см`;
-    document.getElementById('legs-value').textContent   = `${config.legs} см`;
+    function syncExplodeButton() {
+      const btn = document.getElementById('toggleExplode');
+      btn.textContent = config.explode.enabled ? 'Зібрати вузли' : 'Explode view';
+      explodeFactorTarget = config.explode.enabled ? 1 : 0;
+    }
 
-    document.getElementById('bodyColor').value = config.bodyColor;
-    document.getElementById('doorColor').value = config.doorColor;
-    document.getElementById('legColor').value  = config.legColor;
+    function syncModeLabel() {
+      const modeEl = document.getElementById('operationMode-value');
+      if (modeEl) {
+        const preset = OPERATION_PRESETS[config.operation.mode] || OPERATION_PRESETS.medium;
+        modeEl.textContent = `primary: ${Math.round(config.primaryAir.openPct)}%, secondary: ${Math.round(config.operation.secondaryAirPct)}%, air wash: ${preset.airWashGapCm} см`;
+      }
+    }
 
-    const fireCheckbox = document.getElementById('fireEnabled');
-    fireCheckbox.checked = config.fireEnabled;
 
-    const resetBtn = document.getElementById('resetConfig');
-    resetBtn.addEventListener('click', () => {
-      localStorage.removeItem(STORAGE_KEY);
-      config = { ...defaultConfig };
+    function renderPhysicsPanel() {
+      if (!window.PhysicsModel || typeof window.PhysicsModel.evaluate !== 'function') {
+        document.getElementById('physics-efficiency').textContent = 'PhysicsModel недоступний';
+        document.getElementById('physics-kw').textContent = '—';
+        document.getElementById('physics-burn-time').textContent = '—';
+        document.getElementById('physics-warnings').innerHTML = '<li>Не вдалося завантажити модуль PhysicsModel.</li>';
+        return;
+      }
 
-      document.getElementById('width').value  = config.width;
-      document.getElementById('depth').value  = config.depth;
-      document.getElementById('height').value = config.height;
-      document.getElementById('legs').value   = config.legs;
+      const result = window.PhysicsModel.evaluate(config);
+      document.getElementById('physics-efficiency').textContent = `${result.metrics.efficiencyPct}%`;
+      document.getElementById('physics-kw').textContent = `${result.metrics.heatOutputKw} кВт`;
+      document.getElementById('physics-burn-time').textContent = `${result.metrics.burnTimeHours} год`;
 
-      document.getElementById('width-value').textContent  = `${config.width} см`;
-      document.getElementById('depth-value').textContent  = `${config.depth} см`;
-      document.getElementById('height-value').textContent = `${config.height} см`;
-      document.getElementById('legs-value').textContent   = `${config.legs} см`;
+      const warningsEl = document.getElementById('physics-warnings');
+      warningsEl.innerHTML = '';
+      if (!result.warnings.length) {
+        warningsEl.innerHTML = '<li>Проблем не виявлено для поточного режиму.</li>';
+        return;
+      }
 
-      document.getElementById('bodyColor').value = config.bodyColor;
-      document.getElementById('doorColor').value = config.doorColor;
-      document.getElementById('legColor').value  = config.legColor;
-      fireCheckbox.checked = config.fireEnabled;
+      result.warnings.forEach((warning) => {
+        const li = document.createElement('li');
+        li.textContent = `[${warning.level.toUpperCase()}] ${warning.message}`;
+        if (warning.level === 'danger') li.style.color = '#b91c1c';
+        if (warning.level === 'warn') li.style.color = '#9a3412';
+        if (warning.level === 'info') li.style.color = '#1d4ed8';
+        warningsEl.appendChild(li);
+      });
+    }
 
+    function applyModePreset(modeName) {
+      const preset = OPERATION_PRESETS[modeName] || OPERATION_PRESETS.medium;
+      config.operation.mode = modeName in OPERATION_PRESETS ? modeName : 'medium';
+      config.primaryAir.openPct = preset.primaryAirOpenPct;
+      config.operation.secondaryAirPct = preset.secondaryAirPct;
+      config.airWash.gapCm = preset.airWashGapCm;
+      config.operation.flameIntensity = preset.flameIntensity;
+
+      normalizeConfig(config);
       saveConfig(config);
-      createStove(
-        config.width,
-        config.depth,
-        config.height,
-        config.legs,
-        {
-          bodyColor: config.bodyColor,
-          doorColor: config.doorColor,
-          legColor: config.legColor
+      syncUIFromConfig();
+      const modeInput = document.getElementById('operationMode');
+      if (modeInput) modeInput.value = config.operation.mode;
+      syncModeLabel();
+      createStoveFromConfig(config);
+      renderPhysicsPanel();
+    }
+
+    function updateFlameFromMode(elapsedTime) {
+      if (!flameGroupRef || !flameCoreRef || !flameOuterRef) return;
+      const preset = OPERATION_PRESETS[config.operation.mode] || OPERATION_PRESETS.medium;
+      const baseIntensity = config.operation.flameIntensity;
+      const pulse = (Math.sin(elapsedTime * (4 + baseIntensity * 4)) + 1) * 0.5;
+      const intensity = Math.max(0.05, baseIntensity * (0.75 + pulse * 0.5));
+
+      flameGroupRef.visible = intensity > 0.03;
+      flameGroupRef.scale.y = 0.65 + intensity * 1.1;
+
+      flameCoreRef.material.color.setHex(preset.flameColor);
+      flameCoreRef.material.opacity = 0.25 + intensity * 0.45;
+      flameCoreRef.scale.set(0.8 + intensity * 0.8, 0.7 + intensity * 1.4, 0.8 + intensity * 0.8);
+
+      flameOuterRef.material.color.setHex(0xff5a26);
+      flameOuterRef.material.opacity = 0.12 + intensity * 0.28;
+      flameOuterRef.scale.set(1 + intensity * 1.1, 0.85 + intensity * 1.5, 1 + intensity * 1.1);
+
+      flameSparkRefs.forEach((spark, i) => {
+        const phase = elapsedTime * (2 + i * 0.4) + i;
+        spark.position.y = 5 + (phase % 7);
+        spark.material.opacity = 0.2 + (Math.sin(phase * 1.3) + 1) * 0.15 * intensity;
+      });
+    }
+
+    function applyExplodeTransform() {
+      const dist = config.explode.distanceCm;
+      const offsetMap = {
+        chimney: new THREE.Vector3(0, dist * 1.2, 0),
+        door: new THREE.Vector3(0, 0, dist * 0.9),
+        firebrick: new THREE.Vector3(-dist * 0.4, 0, 0),
+        baffle: new THREE.Vector3(dist * 0.35, dist * 0.2, 0),
+        airSystems: new THREE.Vector3(0, 0, dist * 0.65),
+        chamber: new THREE.Vector3(0, 0, -dist * 0.35)
+      };
+
+      Object.entries(offsetMap).forEach(([key, vec]) => {
+        const node = nodeRefs[key];
+        if (node && node.userData.basePosition) {
+          node.position.copy(node.userData.basePosition.clone().add(vec.clone().multiplyScalar(explodeFactorCurrent)));
         }
+      });
+    }
+
+    function createStoveFromConfig(cfg) {
+      scene.remove(stoveGroup);
+      stoveGroup.traverse((node) => {
+        if (node.geometry) node.geometry.dispose();
+        if (node.material && node.material.dispose) node.material.dispose();
+      });
+
+      stoveGroup = new THREE.Group();
+      stoveGroup.name = 'stove';
+
+      const w = cfg.dimensions.widthCm;
+      const d = cfg.dimensions.depthCm;
+      const h = cfg.dimensions.heightCm;
+      const legH = cfg.dimensions.legHeightCm;
+      const steelT = Math.min(cfg.materials.steelThicknessMm / 10, w / 6, d / 6, h / 8);
+
+      const steel = new THREE.MeshStandardMaterial({
+        color: new THREE.Color(cfg.colors.steel),
+        metalness: 0.78,
+        roughness: 0.32
+      });
+
+      const shell = new THREE.Group();
+      shell.position.y = legH;
+
+      const bottom = makePlate(w, steelT, d, steel);
+      bottom.position.y = steelT / 2;
+      shell.add(bottom);
+
+      const left = makePlate(steelT, h, d, steel);
+      left.position.set(-w / 2 + steelT / 2, h / 2, 0);
+      shell.add(left);
+
+      const right = makePlate(steelT, h, d, steel);
+      right.position.set(w / 2 - steelT / 2, h / 2, 0);
+      shell.add(right);
+
+      const back = makePlate(w, h, steelT, steel);
+      back.position.set(0, h / 2, -d / 2 + steelT / 2);
+      shell.add(back);
+
+      const top = makePlate(w, steelT, d, steel);
+      top.position.set(0, h - steelT / 2, 0);
+      shell.add(top);
+
+      const baffleMat = new THREE.MeshStandardMaterial({ color: 0x474c53, metalness: 0.7, roughness: 0.35 });
+      const baffle = makePlate(
+        Math.max(10, w - steelT * 2 - cfg.baffle.frontGapCm),
+        steelT,
+        Math.max(8, d * 0.72),
+        baffleMat
       );
-    });
+      const baffleY = Math.max(steelT * 4, Math.min(h - steelT * 2, cfg.baffle.heightCm));
+      baffle.position.set(0, baffleY, -cfg.baffle.frontGapCm * 0.2);
+      baffle.rotation.x = THREE.MathUtils.degToRad(cfg.baffle.angleDeg);
+      baffle.name = 'bafflePlate';
+      shell.add(baffle);
 
-    controlsIds.forEach(control => {
-      const slider = document.getElementById(control);
-      const display = document.getElementById(`${control}-value`);
+      const airSystemsGroup = new THREE.Group();
+      airSystemsGroup.name = 'airSystemsGroup';
 
-      slider.addEventListener('input', (e) => {
-        const value = parseInt(e.target.value);
-        display.textContent = `${value} см`;
+      const primaryGroup = new THREE.Group();
+      primaryGroup.name = 'primaryAirPanel';
+      const primaryPanelW = Math.min(w - steelT * 3, cfg.primaryAir.holeCount * cfg.primaryAir.holeSpacingCm + 8);
+      const primaryPanelH = 10;
+      const primaryPanel = new THREE.Mesh(
+        new THREE.BoxGeometry(primaryPanelW, primaryPanelH, steelT),
+        new THREE.MeshStandardMaterial({ color: 0x2f3338, metalness: 0.55, roughness: 0.45 })
+      );
+      primaryPanel.position.set(0, 16, d / 2 - steelT * 0.5);
+      primaryGroup.add(primaryPanel);
 
-        config.width  = parseInt(document.getElementById('width').value);
-        config.depth  = parseInt(document.getElementById('depth').value);
-        config.height = parseInt(document.getElementById('height').value);
-        config.legs   = parseInt(document.getElementById('legs').value);
-
-        saveConfig(config);
-
-        createStove(
-          config.width,
-          config.depth,
-          config.height,
-          config.legs,
-          {
-            bodyColor: config.bodyColor,
-            doorColor: config.doorColor,
-            legColor: config.legColor
-          }
+      const holeMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 });
+      const holeCount = cfg.primaryAir.holeCount;
+      const spacing = cfg.primaryAir.holeSpacingCm;
+      const holeDiameter = cfg.primaryAir.holeDiameterCm;
+      const startX = -((holeCount - 1) * spacing) / 2;
+      for (let i = 0; i < holeCount; i++) {
+        const hole = new THREE.Mesh(
+          new THREE.CylinderGeometry(holeDiameter / 2, holeDiameter / 2, steelT * 1.8, 16),
+          holeMat
         );
-      });
-    });
+        hole.rotation.x = Math.PI / 2;
+        hole.position.set(startX + i * spacing, 16, d / 2 + steelT * 0.2);
+        primaryGroup.add(hole);
+      }
 
-    ['bodyColor', 'doorColor', 'legColor'].forEach(id => {
+      const shutter = new THREE.Mesh(
+        new THREE.BoxGeometry(primaryPanelW + 2, primaryPanelH + 1.5, steelT * 0.8),
+        new THREE.MeshStandardMaterial({ color: 0x575d66, metalness: 0.62, roughness: 0.38 })
+      );
+      shutter.position.set(0, 16, d / 2 + steelT * 0.9);
+      primaryGroup.add(shutter);
+      primaryShutterRef = shutter;
+      const closedOffset = -(primaryPanelW * 0.52);
+      const openOffset = 0;
+      primaryShutterXTarget = closedOffset + (openOffset - closedOffset) * (cfg.primaryAir.openPct / 100);
+      primaryShutterXCurrent = primaryShutterXTarget;
+      primaryShutterRef.position.x = primaryShutterXCurrent;
+
+      airSystemsGroup.add(primaryGroup);
+
+      const secondaryGroup = new THREE.Group();
+      secondaryGroup.name = 'secondaryAirChannel';
+      const secondaryY = Math.min(h - steelT * 3, baffleY + 7);
+      const secondaryDepth = 6;
+      const secondaryWidth = Math.max(12, Math.min(w - steelT * 3, cfg.secondaryAir.holeCount * cfg.secondaryAir.holeSpacingCm + 10));
+      const secondaryBody = new THREE.Mesh(
+        new THREE.BoxGeometry(secondaryWidth, 4, secondaryDepth),
+        new THREE.MeshStandardMaterial({ color: 0x5d646d, metalness: 0.6, roughness: 0.4 })
+      );
+      secondaryBody.position.set(0, secondaryY, 0);
+      secondaryGroup.add(secondaryBody);
+
+      const secCount = cfg.secondaryAir.holeCount;
+      const secSpacing = cfg.secondaryAir.holeSpacingCm;
+      const secDia = cfg.secondaryAir.holeDiameterCm;
+      const secStartX = -((secCount - 1) * secSpacing) / 2;
+      for (let i = 0; i < secCount; i++) {
+        const perforation = new THREE.Mesh(
+          new THREE.CylinderGeometry(secDia / 2, secDia / 2, secondaryDepth + 0.8, 12),
+          holeMat
+        );
+        perforation.rotation.x = Math.PI / 2;
+        perforation.position.set(secStartX + i * secSpacing, secondaryY - 0.5, 0);
+        secondaryGroup.add(perforation);
+      }
+
+      airSystemsGroup.add(secondaryGroup);
+
+      const airWashGroup = new THREE.Group();
+      airWashGroup.name = 'airWashChannel';
+      const airWashDoorW = Math.max(20, Math.min(cfg.door.widthCm, w - steelT * 4));
+      const airWashDoorH = Math.max(20, Math.min(cfg.door.heightCm, h - steelT * 4));
+      const airWashW = Math.max(12, Math.min(w - steelT * 3, airWashDoorW + 6));
+      const airWashBody = new THREE.Mesh(
+        new THREE.BoxGeometry(airWashW, 3.2, 6),
+        new THREE.MeshStandardMaterial({ color: 0x616872, metalness: 0.58, roughness: 0.4 })
+      );
+      const airWashY = h * 0.48 + airWashDoorH / 2 + 4.2;
+      airWashBody.position.set(0, airWashY, d / 2 - 2.8);
+      airWashGroup.add(airWashBody);
+
+      const slotHeight = Math.max(0.4, cfg.airWash.gapCm);
+      const slot = new THREE.Mesh(
+        new THREE.BoxGeometry(Math.max(8, airWashW - 2), slotHeight, 0.8),
+        new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.95 })
+      );
+      slot.position.set(0, airWashY - 1.8, d / 2 - 0.1);
+      airWashGroup.add(slot);
+
+      airSystemsGroup.add(airWashGroup);
+      shell.add(airSystemsGroup);
+
+      const chamberGroup = new THREE.Group();
+      chamberGroup.name = 'innerChamber';
+      const chamberW = Math.max(10, w - steelT * 2);
+      const chamberH = Math.max(10, h - steelT * 2);
+      const chamberD = Math.max(10, d - steelT * 2);
+
+      const chamberBox = new THREE.Mesh(
+        new THREE.BoxGeometry(chamberW, chamberH, chamberD),
+        new THREE.MeshStandardMaterial({ color: 0x222222, transparent: true, opacity: 0.08, roughness: 1 })
+      );
+      chamberBox.position.set(0, h / 2, 0);
+      chamberGroup.add(chamberBox);
+      shell.add(chamberGroup);
+
+      const flameGroup = new THREE.Group();
+      flameGroup.name = 'flameGroup';
+      const flameCore = new THREE.Mesh(
+        new THREE.SphereGeometry(4.2, 16, 16),
+        new THREE.MeshStandardMaterial({ color: 0xffa04d, emissive: 0xff5a26, emissiveIntensity: 0.65, transparent: true, opacity: 0.55 })
+      );
+      flameCore.position.set(0, 6, 0);
+      const flameOuter = new THREE.Mesh(
+        new THREE.SphereGeometry(6.4, 16, 16),
+        new THREE.MeshStandardMaterial({ color: 0xff5a26, emissive: 0xff3a12, emissiveIntensity: 0.45, transparent: true, opacity: 0.3 })
+      );
+      flameOuter.position.set(0, 7.4, 0);
+
+      const sparkMat = new THREE.MeshStandardMaterial({ color: 0xffc87a, emissive: 0xff7a2b, emissiveIntensity: 0.3, transparent: true, opacity: 0.3 });
+      const sparks = [];
+      for (let i = 0; i < 6; i++) {
+        const spark = new THREE.Mesh(new THREE.SphereGeometry(0.6, 10, 10), sparkMat.clone());
+        spark.position.set((i - 2.5) * 1.1, 5 + i * 0.6, (i % 2 === 0 ? 1 : -1) * 1.1);
+        sparks.push(spark);
+        flameGroup.add(spark);
+      }
+
+      flameGroup.add(flameCore);
+      flameGroup.add(flameOuter);
+      flameGroup.position.set(0, steelT + 5, d * 0.05);
+      chamberGroup.add(flameGroup);
+
+      flameGroupRef = flameGroup;
+      flameCoreRef = flameCore;
+      flameOuterRef = flameOuter;
+      flameSparkRefs = sparks;
+
+      const firebrickGroup = new THREE.Group();
+      firebrickGroup.name = 'firebrickLining';
+      const brickT = Math.min(cfg.materials.firebrickThicknessCm, chamberW / 4, chamberH / 4, chamberD / 4);
+      const brickMat = new THREE.MeshStandardMaterial({ color: 0xb37a4c, roughness: 0.95, metalness: 0.05 });
+
+      const brickBottom = makePlate(chamberW, brickT, chamberD, brickMat);
+      brickBottom.position.set(0, steelT + brickT / 2, 0);
+      firebrickGroup.add(brickBottom);
+
+      const brickLeft = makePlate(brickT, chamberH - brickT, chamberD, brickMat);
+      brickLeft.position.set(-chamberW / 2 + brickT / 2, h / 2, 0);
+      firebrickGroup.add(brickLeft);
+
+      const brickRight = makePlate(brickT, chamberH - brickT, chamberD, brickMat);
+      brickRight.position.set(chamberW / 2 - brickT / 2, h / 2, 0);
+      firebrickGroup.add(brickRight);
+
+      const brickBack = makePlate(chamberW, chamberH - brickT, brickT, brickMat);
+      brickBack.position.set(0, h / 2, -chamberD / 2 + brickT / 2);
+      firebrickGroup.add(brickBack);
+
+      firebrickGroup.position.y = 0;
+      shell.add(firebrickGroup);
+
+      const maxDoorWidth = w - steelT * 4;
+      const maxDoorHeight = h - steelT * 4;
+      const doorW = Math.max(20, Math.min(cfg.door.widthCm, maxDoorWidth));
+      const doorH = Math.max(20, Math.min(cfg.door.heightCm, maxDoorHeight));
+      const frameT = Math.max(1, Math.min(cfg.door.frameThicknessCm, 6));
+      const glassInset = Math.max(0.5, Math.min(cfg.door.glassInsetCm, Math.min(doorW, doorH) / 3));
+
+      const doorPivot = new THREE.Group();
+      doorPivot.name = 'doorPivot';
+      doorPivot.position.set(-doorW / 2, h * 0.48, d / 2 + steelT * 0.5);
+
+      const doorLeaf = new THREE.Group();
+      doorLeaf.position.set(doorW / 2, 0, 0);
+
+      const frameOuter = new THREE.Mesh(
+        new THREE.BoxGeometry(doorW, doorH, frameT),
+        new THREE.MeshStandardMaterial({ color: 0x26292e, metalness: 0.7, roughness: 0.35 })
+      );
+      frameOuter.castShadow = true;
+      frameOuter.receiveShadow = true;
+
+      const glass = new THREE.Mesh(
+        new THREE.BoxGeometry(Math.max(doorW - glassInset * 2, 1), Math.max(doorH - glassInset * 2, 1), 0.7),
+        new THREE.MeshStandardMaterial({ color: 0x8ca7be, transparent: true, opacity: 0.45, roughness: 0.05, metalness: 0.15 })
+      );
+      glass.position.z = frameT / 2 + 0.4;
+
+      const handle = new THREE.Mesh(
+        new THREE.CylinderGeometry(1.1, 1.1, 12, 16),
+        new THREE.MeshStandardMaterial({ color: 0xc9c9c9, metalness: 0.85, roughness: 0.25 })
+      );
+      handle.rotation.z = Math.PI / 2;
+      handle.position.set(doorW * 0.33, -doorH * 0.05, frameT / 2 + 1.8);
+
+      doorLeaf.add(frameOuter);
+      doorLeaf.add(glass);
+      doorLeaf.add(handle);
+      doorPivot.add(doorLeaf);
+      shell.add(doorPivot);
+
+      doorPivotRef = doorPivot;
+      doorTargetAngle = cfg.door.isOpen ? -THREE.MathUtils.degToRad(cfg.door.openAngleDeg) : 0;
+      doorCurrentAngle = doorTargetAngle;
+      doorPivot.rotation.y = doorCurrentAngle;
+
+      const chimney = new THREE.Mesh(
+        new THREE.CylinderGeometry(cfg.chimney.diameterCm / 2, cfg.chimney.diameterCm / 2, cfg.chimney.heightCm, 32),
+        steel
+      );
+      chimney.position.set(0, legH + h + cfg.chimney.heightCm / 2, -d * 0.2);
+      chimney.castShadow = true;
+      shell.add(chimney);
+
+      chimney.visible = cfg.visibility.chimney;
+
+      if (legH > 0) {
+        const legGeo = new THREE.BoxGeometry(5, legH, 5);
+        const legMat = new THREE.MeshStandardMaterial({ color: 0x202224, metalness: 0.6, roughness: 0.5 });
+        const legOffsets = [
+          [w / 2 - 6, legH / 2, d / 2 - 6],
+          [-w / 2 + 6, legH / 2, d / 2 - 6],
+          [w / 2 - 6, legH / 2, -d / 2 + 6],
+          [-w / 2 + 6, legH / 2, -d / 2 + 6]
+        ];
+        legOffsets.forEach((offset) => {
+          const leg = new THREE.Mesh(legGeo, legMat);
+          leg.position.set(...offset);
+          leg.castShadow = true;
+          leg.receiveShadow = true;
+          stoveGroup.add(leg);
+        });
+      }
+
+      stoveGroup.add(shell);
+      scene.add(stoveGroup);
+
+      nodeRefs = {
+        chimney,
+        door: doorPivot,
+        firebrick: firebrickGroup,
+        baffle,
+        airSystems: airSystemsGroup,
+        chamber: chamberGroup
+      };
+      Object.values(nodeRefs).forEach(storeBasePosition);
+      applyVisibilityFromConfig();
+      explodeFactorCurrent = cfg.explode.enabled ? 1 : 0;
+      explodeFactorTarget = explodeFactorCurrent;
+      applyExplodeTransform();
+
+      const targetY = Math.max(legH + h * 0.2, Math.min(legH + h * 0.8, cfg.camera.targetY));
+      controls.target.set(0, targetY, 0);
+      const dir = camera.position.clone().sub(controls.target).normalize();
+      camera.position.copy(controls.target.clone().add(dir.multiplyScalar(cfg.camera.distance)));
+      camera.fov = cfg.camera.fov;
+      camera.updateProjectionMatrix();
+      controls.update();
+    }
+
+    function formatValue(id, value) {
+      if (id === "operationMode") return `${value}`;
+      if (unitByControl[id]) {
+        return `${value}${unitByControl[id]}`;
+      }
+      if (id.toLowerCase().includes('cm') || id.toLowerCase().includes('height') || id.toLowerCase().includes('width') || id.toLowerCase().includes('depth')) {
+        return `${value} см`;
+      }
+      return `${value}`;
+    }
+
+    function syncUIFromConfig() {
+      Object.entries(controlMap).forEach(([id, path]) => {
+        const input = document.getElementById(id);
+        const val = getByPath(config, path);
+        input.value = val;
+        const displayValue = id === "operationMode" ? val : Number(val);
+        document.getElementById(`${id}-value`).textContent = formatValue(id, displayValue);
+      });
+    }
+
+    function onInputChange(id) {
+      const path = controlMap[id];
       const input = document.getElementById(id);
-      input.addEventListener('input', (e) => {
-        config[id] = e.target.value;
+      const isModeControl = id === "operationMode";
+      const value = isModeControl ? input.value : parseFloat(input.value);
+      setByPath(config, path, value);
+      normalizeConfig(config);
+      const normalizedValue = getByPath(config, path);
+      input.value = normalizedValue;
+      document.getElementById(`${id}-value`).textContent = formatValue(id, normalizedValue);
+      if (id === 'doorOpenAngleDeg') {
+        doorTargetAngle = config.door.isOpen ? -THREE.MathUtils.degToRad(config.door.openAngleDeg) : 0;
+      }
+      if (id === 'explodeDistanceCm') {
+        applyExplodeTransform();
+      }
+      if (id === 'primaryAirOpenPct') {
+        const panelW = Math.min(config.dimensions.widthCm - (config.materials.steelThicknessMm / 10) * 3, config.primaryAir.holeCount * config.primaryAir.holeSpacingCm + 8);
+        const closedOffset = -(panelW * 0.52);
+        const openOffset = 0;
+        primaryShutterXTarget = closedOffset + (openOffset - closedOffset) * (config.primaryAir.openPct / 100);
+      }
+      if (id === 'operationMode') {
+        applyModePreset(config.operation.mode);
+        return;
+      }
+      saveConfig(config);
+      syncModeLabel();
+      createStoveFromConfig(config);
+      renderPhysicsPanel();
+    }
+
+    Object.keys(controlMap).forEach((id) => {
+      const el = document.getElementById(id);
+      if (id === "operationMode") {
+        el.addEventListener('change', () => onInputChange(id));
+      } else {
+        el.addEventListener('input', () => onInputChange(id));
+      }
+    });
+
+    const toggleDoorBtn = document.getElementById('toggleDoor');
+
+    function syncDoorButton() {
+      toggleDoorBtn.textContent = config.door.isOpen ? 'Закрити дверця' : 'Відкрити дверця';
+    }
+
+    toggleDoorBtn.addEventListener('click', () => {
+      config.door.isOpen = !config.door.isOpen;
+      normalizeConfig(config);
+      doorTargetAngle = config.door.isOpen ? -THREE.MathUtils.degToRad(config.door.openAngleDeg) : 0;
+      saveConfig(config);
+      syncDoorButton();
+    });
+
+
+    const visibilityMap = {
+      showFirebrick: 'firebrick',
+      showBaffle: 'baffle',
+      showAirChannels: 'airChannels',
+      showChimney: 'chimney'
+    };
+
+    Object.entries(visibilityMap).forEach(([id, key]) => {
+      const el = document.getElementById(id);
+      el.checked = config.visibility[key];
+      el.addEventListener('change', (e) => {
+        config.visibility[key] = e.target.checked;
+        normalizeConfig(config);
         saveConfig(config);
-        createStove(
-          config.width,
-          config.depth,
-          config.height,
-          config.legs,
-          {
-            bodyColor: config.bodyColor,
-            doorColor: config.doorColor,
-            legColor: config.legColor
-          }
-        );
+        applyVisibilityFromConfig();
       });
     });
 
-    fireCheckbox.addEventListener('change', (e) => {
-      config.fireEnabled = e.target.checked;
+    const toggleExplodeBtn = document.getElementById('toggleExplode');
+    toggleExplodeBtn.addEventListener('click', () => {
+      config.explode.enabled = !config.explode.enabled;
+      normalizeConfig(config);
       saveConfig(config);
+      syncExplodeButton();
     });
 
-    createStove(
-      config.width,
-      config.depth,
-      config.height,
-      config.legs,
-      {
-        bodyColor: config.bodyColor,
-        doorColor: config.doorColor,
-        legColor: config.legColor
-      }
-    );
-
-    let isDragging = false;
-    let previousMousePosition = { x: 0, y: 0 };
-    let cameraAngle = { x: 0, y: 0 };
-    const cameraDistance = 3;
-
-    renderer.domElement.addEventListener('mousedown', (e) => {
-      isDragging = true;
-      previousMousePosition = { x: e.clientX, y: e.clientY };
+    document.getElementById('resetConfig').addEventListener('click', () => {
+      localStorage.removeItem(STORAGE_KEY);
+      config = normalizeConfig(deepMerge(defaultConfig, {}));
+      syncUIFromConfig();
+      Object.entries(visibilityMap).forEach(([id, key]) => { document.getElementById(id).checked = config.visibility[key]; });
+      createStoveFromConfig(config);
+      syncDoorButton();
+      syncExplodeButton();
+      document.getElementById("operationMode").value = config.operation.mode;
+      syncModeLabel();
+      renderPhysicsPanel();
     });
 
-    renderer.domElement.addEventListener('mousemove', (e) => {
-      if (isDragging) {
-        const deltaX = e.clientX - previousMousePosition.x;
-        const deltaY = e.clientY - previousMousePosition.y;
-
-        cameraAngle.y += deltaX * 0.005;
-        cameraAngle.x += deltaY * 0.005;
-
-        cameraAngle.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, cameraAngle.x));
-
-        camera.position.x = cameraDistance * Math.cos(cameraAngle.x) * Math.sin(cameraAngle.y);
-        camera.position.y = cameraDistance * Math.sin(cameraAngle.x) + 1;
-        camera.position.z = cameraDistance * Math.cos(cameraAngle.x) * Math.cos(cameraAngle.y);
-        camera.lookAt(0, 1, 0);
-
-        previousMousePosition = { x: e.clientX, y: e.clientY };
-      }
-    });
-
-    renderer.domElement.addEventListener('mouseup', () => {
-      isDragging = false;
-    });
-
-    renderer.domElement.addEventListener('mouseleave', () => {
-      isDragging = false;
-    });
-
-    renderer.domElement.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      const zoomSpeed = 0.1;
-      const target = new THREE.Vector3(0, 1, 0);
-      const currentDistance = camera.position.distanceTo(target);
-      const newDistance = currentDistance + (e.deltaY > 0 ? zoomSpeed : -zoomSpeed);
-
-      if (newDistance > 1 && newDistance < 10) {
-        const dir = camera.position.clone().sub(target).normalize();
-        const newPos = dir.multiplyScalar(newDistance).add(target);
-        camera.position.copy(newPos);
-      }
-    });
+    syncUIFromConfig();
+    Object.entries(visibilityMap).forEach(([id, key]) => { document.getElementById(id).checked = config.visibility[key]; });
+    createStoveFromConfig(config);
+    syncDoorButton();
+    syncExplodeButton();
+    document.getElementById("operationMode").value = config.operation.mode;
+    syncModeLabel();
+    renderPhysicsPanel();
 
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
@@ -424,22 +1000,34 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    const clock = new THREE.Clock();
-
     function animate() {
       requestAnimationFrame(animate);
+      const elapsed = performance.now() * 0.001;
 
-      const elapsed = clock.getElapsedTime();
-      const fireWindow = stoveGroup.getObjectByName('fireWindow');
-
-      if (fireWindow && fireWindow.material && config.fireEnabled) {
-        const baseIntensity = 0.6;
-        const amplitude = 0.3;
-        const speed = 5.0;
-        fireWindow.material.emissiveIntensity =
-          baseIntensity + Math.sin(elapsed * speed) * amplitude;
+      if (doorPivotRef) {
+        doorCurrentAngle += (doorTargetAngle - doorCurrentAngle) * 0.12;
+        if (Math.abs(doorTargetAngle - doorCurrentAngle) < 0.0005) {
+          doorCurrentAngle = doorTargetAngle;
+        }
+        doorPivotRef.rotation.y = doorCurrentAngle;
       }
 
+      if (primaryShutterRef) {
+        primaryShutterXCurrent += (primaryShutterXTarget - primaryShutterXCurrent) * 0.14;
+        if (Math.abs(primaryShutterXTarget - primaryShutterXCurrent) < 0.001) {
+          primaryShutterXCurrent = primaryShutterXTarget;
+        }
+        primaryShutterRef.position.x = primaryShutterXCurrent;
+      }
+
+      explodeFactorCurrent += (explodeFactorTarget - explodeFactorCurrent) * 0.12;
+      if (Math.abs(explodeFactorTarget - explodeFactorCurrent) < 0.0008) {
+        explodeFactorCurrent = explodeFactorTarget;
+      }
+      applyExplodeTransform();
+      updateFlameFromMode(elapsed);
+
+      controls.update();
       renderer.render(scene, camera);
     }
 
