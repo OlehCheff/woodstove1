@@ -300,6 +300,7 @@
           legColor: config.legColor
         }
       );
+      updateFireWindowState();
     });
 
     controlsIds.forEach(control => {
@@ -328,6 +329,7 @@
             legColor: config.legColor
           }
         );
+        updateFireWindowState();
       });
     });
 
@@ -347,13 +349,24 @@
             legColor: config.legColor
           }
         );
+        updateFireWindowState();
       });
     });
 
     fireCheckbox.addEventListener('change', (e) => {
       config.fireEnabled = e.target.checked;
       saveConfig(config);
+      updateFireWindowState();
     });
+
+    function updateFireWindowState() {
+      const fireWindow = stoveGroup.getObjectByName('fireWindow');
+      if (!fireWindow || !fireWindow.material) {
+        return;
+      }
+
+      fireWindow.material.emissiveIntensity = config.fireEnabled ? 0.6 : 0;
+    }
 
     createStove(
       config.width,
@@ -366,6 +379,7 @@
         legColor: config.legColor
       }
     );
+    updateFireWindowState();
 
     let isDragging = false;
     let previousMousePosition = { x: 0, y: 0 };
@@ -438,6 +452,8 @@
         const speed = 5.0;
         fireWindow.material.emissiveIntensity =
           baseIntensity + Math.sin(elapsed * speed) * amplitude;
+      } else if (fireWindow && fireWindow.material) {
+        fireWindow.material.emissiveIntensity = 0;
       }
 
       renderer.render(scene, camera);
