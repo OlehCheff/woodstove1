@@ -75,6 +75,7 @@
     <div class="control-group"><label for="firebrickThicknessCm">Товщина шамоту (см)</label><input type="range" id="firebrickThicknessCm" min="2" max="8" step="0.5"><div class="value-display" id="firebrickThicknessCm-value"></div></div>
 
     <h3>Sprint 3 — Бафль</h3>
+    <div class="control-group"><label for="baffleAirflowPct">Приток повітря бафля (%)</label><input type="range" id="baffleAirflowPct" min="0" max="100" step="1"><div class="value-display" id="baffleAirflowPct-value"></div></div>
     <div class="control-group"><label for="baffleHeightCm">Висота бафля від дна (см)</label><input type="range" id="baffleHeightCm" min="20" max="120" step="1"><div class="value-display" id="baffleHeightCm-value"></div></div>
     <div class="control-group"><label for="baffleAngleDeg">Кут бафля (°)</label><input type="range" id="baffleAngleDeg" min="-20" max="30" step="1"><div class="value-display" id="baffleAngleDeg-value"></div></div>
     <div class="control-group"><label for="baffleFrontGapCm">Передній зазор бафля (см)</label><input type="range" id="baffleFrontGapCm" min="2" max="15" step="0.5"><div class="value-display" id="baffleFrontGapCm-value"></div></div>
@@ -100,6 +101,7 @@
 
     <h3>Sprint 4 — Air wash і видимість</h3>
     <div class="control-group"><label for="airWashGapCm">Air wash щілина (см)</label><input type="range" id="airWashGapCm" min="0.5" max="3" step="0.1"><div class="value-display" id="airWashGapCm-value"></div></div>
+    <div class="control-group"><label for="airWashIntakePct">Приток air wash (%)</label><input type="range" id="airWashIntakePct" min="0" max="100" step="1"><div class="value-display" id="airWashIntakePct-value"></div></div>
     <div class="control-group"><label><input type="checkbox" id="showFirebrick"> Показувати шамот</label></div>
     <div class="control-group"><label><input type="checkbox" id="showBaffle"> Показувати бафль</label></div>
     <div class="control-group"><label><input type="checkbox" id="showAirChannels"> Показувати повітряні канали</label></div>
@@ -107,7 +109,7 @@
     <div class="control-group"><label for="explodeDistanceCm">Explode distance (см)</label><input type="range" id="explodeDistanceCm" min="5" max="40" step="1"><div class="value-display" id="explodeDistanceCm-value"></div></div>
 
 
-    <h3>Sprint 5 — Режими роботи</h3>
+    <h3>Режими (роботи та відображення)</h3>
     <div class="control-group">
       <label for="operationMode">Режим роботи</label>
       <select id="operationMode" style="width:100%; padding:6px; border-radius:6px; border:1px solid #bbb;">
@@ -141,7 +143,7 @@
 
 
 
-    <h3>Sprint 7 — Drawing mode та UX</h3>
+    <h3>UX (JSON / Help)</h3>
     <div class="control-group">
       <label for="viewMode">Режим перегляду</label>
       <select id="viewMode" style="width:100%; padding:6px; border-radius:6px; border:1px solid #bbb;">
@@ -197,7 +199,8 @@
       baffle: {
         heightCm: 58,
         angleDeg: 6,
-        frontGapCm: 6
+        frontGapCm: 6,
+        airflowPct: 55
       },
       primaryAir: {
         holeCount: 8,
@@ -211,7 +214,8 @@
         holeSpacingCm: 2.4
       },
       airWash: {
-        gapCm: 1.2
+        gapCm: 1.2,
+        intakePct: 60
       },
       visibility: {
         firebrick: true,
@@ -258,6 +262,7 @@
       baffleHeightCm: 'baffle.heightCm',
       baffleAngleDeg: 'baffle.angleDeg',
       baffleFrontGapCm: 'baffle.frontGapCm',
+      baffleAirflowPct: 'baffle.airflowPct',
       primaryHoleCount: 'primaryAir.holeCount',
       primaryHoleDiameterCm: 'primaryAir.holeDiameterCm',
       primaryHoleSpacingCm: 'primaryAir.holeSpacingCm',
@@ -266,6 +271,7 @@
       secondaryHoleDiameterCm: 'secondaryAir.holeDiameterCm',
       secondaryHoleSpacingCm: 'secondaryAir.holeSpacingCm',
       airWashGapCm: 'airWash.gapCm',
+      airWashIntakePct: 'airWash.intakePct',
       explodeDistanceCm: 'explode.distanceCm',
       operationMode: 'operation.mode',
       viewMode: 'viewMode',
@@ -285,6 +291,8 @@
       doorOpenAngleDeg: '°',
       baffleAngleDeg: '°',
       primaryAirOpenPct: '%',
+      baffleAirflowPct: '%',
+      airWashIntakePct: '%',
       steelThicknessMm: ' мм',
       explodeDistanceCm: ' см',
       operationMode: '',
@@ -351,6 +359,7 @@
       cfg.baffle.heightCm = Math.max(20, Math.min(120, cfg.baffle.heightCm));
       cfg.baffle.angleDeg = Math.max(-20, Math.min(30, cfg.baffle.angleDeg));
       cfg.baffle.frontGapCm = Math.max(2, Math.min(15, cfg.baffle.frontGapCm));
+      cfg.baffle.airflowPct = Math.max(0, Math.min(100, cfg.baffle.airflowPct));
 
       cfg.primaryAir.holeCount = Math.max(3, Math.min(14, Math.round(cfg.primaryAir.holeCount)));
       cfg.primaryAir.holeDiameterCm = Math.max(0.6, Math.min(2.5, cfg.primaryAir.holeDiameterCm));
@@ -362,6 +371,7 @@
       cfg.secondaryAir.holeSpacingCm = Math.max(1.5, Math.min(4, cfg.secondaryAir.holeSpacingCm));
 
       cfg.airWash.gapCm = Math.max(0.5, Math.min(3, cfg.airWash.gapCm));
+      cfg.airWash.intakePct = Math.max(0, Math.min(100, cfg.airWash.intakePct));
 
       cfg.visibility.firebrick = Boolean(cfg.visibility.firebrick);
       cfg.visibility.baffle = Boolean(cfg.visibility.baffle);
@@ -487,6 +497,7 @@
       if (nodeRefs.baffle) nodeRefs.baffle.visible = config.visibility.baffle;
       if (nodeRefs.airSystems) nodeRefs.airSystems.visible = config.visibility.airChannels;
       if (nodeRefs.chimney) nodeRefs.chimney.visible = config.visibility.chimney;
+      if (nodeRefs.chimneyCollar) nodeRefs.chimneyCollar.visible = config.visibility.chimney;
     }
 
     function syncExplodeButton() {
@@ -754,6 +765,14 @@
       baffle.name = 'bafflePlate';
       shell.add(baffle);
 
+      const baffleRegulator = new THREE.Mesh(
+        new THREE.BoxGeometry(Math.max(12, w * 0.35), 1.2, 2),
+        new THREE.MeshStandardMaterial({ color: 0x2a2f36, metalness: 0.55, roughness: 0.45 })
+      );
+      const baffleRegTravel = Math.max(8, w * 0.22);
+      baffleRegulator.position.set(-baffleRegTravel * 0.5 + baffleRegTravel * (cfg.baffle.airflowPct / 100), baffleY - 2.2, d * 0.16);
+      shell.add(baffleRegulator);
+
       const airSystemsGroup = new THREE.Group();
       airSystemsGroup.name = 'airSystemsGroup';
 
@@ -846,6 +865,14 @@
       );
       slot.position.set(0, airWashY - 1.8, d / 2 - 0.1);
       airWashGroup.add(slot);
+
+      const airWashRegulator = new THREE.Mesh(
+        new THREE.BoxGeometry(Math.max(6, airWashW - 6), 1.1, 1),
+        new THREE.MeshStandardMaterial({ color: 0x323841, metalness: 0.58, roughness: 0.42 })
+      );
+      const awTravel = Math.max(4, (airWashW - 8) * 0.35);
+      airWashRegulator.position.set(-awTravel * 0.5 + awTravel * (cfg.airWash.intakePct / 100), airWashY - 3.2, d / 2 + 0.9);
+      airWashGroup.add(airWashRegulator);
 
       airSystemsGroup.add(airWashGroup);
       shell.add(airSystemsGroup);
@@ -969,11 +996,19 @@
         new THREE.CylinderGeometry(cfg.chimney.diameterCm / 2, cfg.chimney.diameterCm / 2, cfg.chimney.heightCm, 32),
         steel
       );
-      chimney.position.set(0, legH + h + cfg.chimney.heightCm / 2, -d * 0.2);
+      chimney.position.set(0, legH + h + cfg.chimney.heightCm / 2 - steelT * 0.15, -d * 0.2);
       chimney.castShadow = true;
       shell.add(chimney);
 
+      const chimneyCollar = new THREE.Mesh(
+        new THREE.CylinderGeometry(cfg.chimney.diameterCm * 0.62, cfg.chimney.diameterCm * 0.62, steelT * 1.6, 24),
+        new THREE.MeshStandardMaterial({ color: 0x353a41, metalness: 0.7, roughness: 0.36 })
+      );
+      chimneyCollar.position.set(0, legH + h + steelT * 0.65, -d * 0.2);
+      shell.add(chimneyCollar);
+
       chimney.visible = cfg.visibility.chimney;
+      chimneyCollar.visible = cfg.visibility.chimney;
 
       if (legH > 0) {
         const legGeo = new THREE.BoxGeometry(5, legH, 5);
@@ -998,6 +1033,7 @@
 
       nodeRefs = {
         chimney,
+        chimneyCollar,
         door: doorPivot,
         firebrick: firebrickGroup,
         baffle,
