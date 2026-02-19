@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D Модель дров'яної печі — Sprint 1</title>
+  <title>3D Модель дров'яної печі — Sprint 7</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: Arial, sans-serif; overflow: hidden; }
@@ -30,13 +30,38 @@
     .btn-row { margin-top: 14px; display: flex; gap: 8px; }
     button { padding: 8px 10px; border: none; border-radius: 6px; background: #2f6fed; color: #fff; cursor: pointer; }
     button.secondary { background: #6b7280; }
+    #drawing-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+    .dimension-line {
+      position: absolute;
+      height: 2px;
+      background: #0f172a;
+      transform-origin: 0 0;
+      opacity: 0.85;
+    }
+    .dimension-label {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      font-size: 12px;
+      background: rgba(255,255,255,0.92);
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      padding: 2px 6px;
+      color: #111827;
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
   <div id="canvas-container"></div>
+  <div id="drawing-overlay"></div>
 
   <div id="controls">
-    <h2>Sprint 5 — Режими роботи й полум’я</h2>
+    <h2>Sprint 7 — Режим креслень та UX</h2>
     <p class="hint">Масштаб: <strong>1 од. = 1 см</strong>. Зміни застосовуються одразу.</p>
 
     <h3>Габарити</h3>
@@ -114,6 +139,28 @@
       <ul id="physics-warnings" style="padding-left:18px; font-size:12px; color:#444;"></ul>
     </div>
 
+
+
+    <h3>Sprint 7 — Drawing mode та UX</h3>
+    <div class="control-group">
+      <label for="viewMode">Режим перегляду</label>
+      <select id="viewMode" style="width:100%; padding:6px; border-radius:6px; border:1px solid #bbb;">
+        <option value="3d">3D view</option>
+        <option value="drawing-front">Drawing front</option>
+        <option value="drawing-side">Drawing side</option>
+        <option value="drawing-top">Drawing top</option>
+      </select>
+      <div class="value-display" id="viewMode-value"></div>
+    </div>
+    <div class="btn-row" style="margin-top:8px;">
+      <button id="saveConfigJson" class="secondary">Зберегти JSON</button>
+      <button id="loadConfigJson" class="secondary">Завантажити JSON</button>
+      <input type="file" id="loadConfigFile" accept="application/json" style="display:none;">
+    </div>
+    <div class="btn-row" style="margin-top:8px;">
+      <button id="showHelpTour" class="secondary">Help / Tour</button>
+    </div>
+
     <h3>Камера</h3>
     <div class="control-group"><label for="cameraFov">FOV камери (°)</label><input type="range" id="cameraFov" min="35" max="85" step="1"><div class="value-display" id="cameraFov-value"></div></div>
     <div class="control-group"><label for="cameraDistance">Відстань камери</label><input type="range" id="cameraDistance" min="140" max="500" step="5"><div class="value-display" id="cameraDistance-value"></div></div>
@@ -181,6 +228,7 @@
         secondaryAirPct: 55,
         flameIntensity: 0.62
       },
+      viewMode: "3d",
       door: {
         widthCm: 42,
         heightCm: 38,
@@ -220,6 +268,7 @@
       airWashGapCm: 'airWash.gapCm',
       explodeDistanceCm: 'explode.distanceCm',
       operationMode: 'operation.mode',
+      viewMode: 'viewMode',
       chimneyDiameterCm: 'chimney.diameterCm',
       doorWidthCm: 'door.widthCm',
       doorHeightCm: 'door.heightCm',
@@ -239,6 +288,7 @@
       steelThicknessMm: ' мм',
       explodeDistanceCm: ' см',
       operationMode: '',
+      viewMode: '',
       cameraDistance: ' см',
       cameraTargetYCm: ' см'
     };
@@ -322,6 +372,7 @@
       cfg.explode.distanceCm = Math.max(5, Math.min(40, cfg.explode.distanceCm));
 
       if (!OPERATION_PRESETS[cfg.operation.mode]) cfg.operation.mode = 'medium';
+      if (!['3d','drawing-front','drawing-side','drawing-top'].includes(cfg.viewMode)) cfg.viewMode = '3d';
       cfg.operation.secondaryAirPct = Math.max(0, Math.min(100, cfg.operation.secondaryAirPct));
       cfg.operation.flameIntensity = Math.max(0, Math.min(1, cfg.operation.flameIntensity));
 
@@ -500,6 +551,7 @@
       syncModeLabel();
       createStoveFromConfig(config);
       renderPhysicsPanel();
+      applyViewMode();
     }
 
     function updateFlameFromMode(elapsedTime) {
@@ -527,6 +579,104 @@
       });
     }
 
+
+
+    const DRAWING_VIEW_DEFS = {
+      'drawing-front': {
+        camera: { position: new THREE.Vector3(0, 70, 340), up: new THREE.Vector3(0, 1, 0) },
+        dimensions: [
+          { id: 'width', text: (cfg) => `W: ${cfg.dimensions.widthCm} см`, from: (cfg) => new THREE.Vector3(-cfg.dimensions.widthCm / 2, 8, cfg.dimensions.depthCm / 2 + 2), to: (cfg) => new THREE.Vector3(cfg.dimensions.widthCm / 2, 8, cfg.dimensions.depthCm / 2 + 2) },
+          { id: 'height', text: (cfg) => `H: ${cfg.dimensions.heightCm + cfg.dimensions.legHeightCm} см`, from: (cfg) => new THREE.Vector3(cfg.dimensions.widthCm / 2 + 6, cfg.dimensions.legHeightCm, cfg.dimensions.depthCm / 2 + 2), to: (cfg) => new THREE.Vector3(cfg.dimensions.widthCm / 2 + 6, cfg.dimensions.legHeightCm + cfg.dimensions.heightCm, cfg.dimensions.depthCm / 2 + 2) }
+        ]
+      },
+      'drawing-side': {
+        camera: { position: new THREE.Vector3(340, 70, 0), up: new THREE.Vector3(0, 1, 0) },
+        dimensions: [
+          { id: 'depth', text: (cfg) => `D: ${cfg.dimensions.depthCm} см`, from: (cfg) => new THREE.Vector3(cfg.dimensions.widthCm / 2 + 2, 8, -cfg.dimensions.depthCm / 2), to: (cfg) => new THREE.Vector3(cfg.dimensions.widthCm / 2 + 2, 8, cfg.dimensions.depthCm / 2) },
+          { id: 'height', text: (cfg) => `H: ${cfg.dimensions.heightCm + cfg.dimensions.legHeightCm} см`, from: (cfg) => new THREE.Vector3(cfg.dimensions.widthCm / 2 + 2, cfg.dimensions.legHeightCm, cfg.dimensions.depthCm / 2 + 7), to: (cfg) => new THREE.Vector3(cfg.dimensions.widthCm / 2 + 2, cfg.dimensions.legHeightCm + cfg.dimensions.heightCm, cfg.dimensions.depthCm / 2 + 7) }
+        ]
+      },
+      'drawing-top': {
+        camera: { position: new THREE.Vector3(0, 430, 0), up: new THREE.Vector3(0, 0, -1) },
+        dimensions: [
+          { id: 'width', text: (cfg) => `W: ${cfg.dimensions.widthCm} см`, from: (cfg) => new THREE.Vector3(-cfg.dimensions.widthCm / 2, cfg.dimensions.heightCm + cfg.dimensions.legHeightCm + 3, cfg.dimensions.depthCm / 2 + 4), to: (cfg) => new THREE.Vector3(cfg.dimensions.widthCm / 2, cfg.dimensions.heightCm + cfg.dimensions.legHeightCm + 3, cfg.dimensions.depthCm / 2 + 4) },
+          { id: 'depth', text: (cfg) => `D: ${cfg.dimensions.depthCm} см`, from: (cfg) => new THREE.Vector3(cfg.dimensions.widthCm / 2 + 4, cfg.dimensions.heightCm + cfg.dimensions.legHeightCm + 3, -cfg.dimensions.depthCm / 2), to: (cfg) => new THREE.Vector3(cfg.dimensions.widthCm / 2 + 4, cfg.dimensions.heightCm + cfg.dimensions.legHeightCm + 3, cfg.dimensions.depthCm / 2) }
+        ]
+      }
+    };
+
+    function worldToScreen(vec3) {
+      const projected = vec3.clone().project(camera);
+      return {
+        x: (projected.x * 0.5 + 0.5) * renderer.domElement.clientWidth,
+        y: (-projected.y * 0.5 + 0.5) * renderer.domElement.clientHeight
+      };
+    }
+
+    function renderDrawingOverlay() {
+      const overlay = document.getElementById('drawing-overlay');
+      overlay.innerHTML = '';
+
+      if (config.viewMode === '3d') {
+        overlay.style.display = 'none';
+        return;
+      }
+      overlay.style.display = 'block';
+
+      const def = DRAWING_VIEW_DEFS[config.viewMode];
+      if (!def) return;
+
+      def.dimensions.forEach((dim) => {
+        const from = worldToScreen(dim.from(config));
+        const to = worldToScreen(dim.to(config));
+
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        const length = Math.sqrt(dx * dx + dy * dy);
+        const angle = Math.atan2(dy, dx);
+
+        const line = document.createElement('div');
+        line.className = 'dimension-line';
+        line.style.left = `${from.x}px`;
+        line.style.top = `${from.y}px`;
+        line.style.width = `${length}px`;
+        line.style.transform = `rotate(${angle}rad)`;
+        overlay.appendChild(line);
+
+        const label = document.createElement('div');
+        label.className = 'dimension-label';
+        label.textContent = dim.text(config);
+        label.style.left = `${(from.x + to.x) / 2}px`;
+        label.style.top = `${(from.y + to.y) / 2 - 10}px`;
+        overlay.appendChild(label);
+      });
+    }
+
+    function applyViewMode() {
+      const mode = config.viewMode;
+      const modeLabel = document.getElementById('viewMode-value');
+      modeLabel.textContent = mode;
+
+      if (mode === '3d') {
+        controls.enabled = true;
+        const targetY = Math.max(config.dimensions.legHeightCm + config.dimensions.heightCm * 0.2, Math.min(config.dimensions.legHeightCm + config.dimensions.heightCm * 0.8, config.camera.targetY));
+        controls.target.set(0, targetY, 0);
+        const dir = camera.position.clone().sub(controls.target).normalize();
+        camera.position.copy(controls.target.clone().add(dir.multiplyScalar(config.camera.distance)));
+        camera.up.set(0, 1, 0);
+      } else {
+        controls.enabled = false;
+        const def = DRAWING_VIEW_DEFS[mode];
+        if (def) {
+          camera.position.copy(def.camera.position);
+          camera.up.copy(def.camera.up);
+          controls.target.set(0, config.dimensions.legHeightCm + config.dimensions.heightCm * 0.5, 0);
+          camera.lookAt(controls.target);
+        }
+      }
+      camera.updateProjectionMatrix();
+      renderDrawingOverlay();
+    }
     function applyExplodeTransform() {
       const dist = config.explode.distanceCm;
       const offsetMap = {
@@ -870,7 +1020,7 @@
     }
 
     function formatValue(id, value) {
-      if (id === "operationMode") return `${value}`;
+      if (id === "operationMode" || id === "viewMode") return `${value}`;
       if (unitByControl[id]) {
         return `${value}${unitByControl[id]}`;
       }
@@ -885,7 +1035,7 @@
         const input = document.getElementById(id);
         const val = getByPath(config, path);
         input.value = val;
-        const displayValue = id === "operationMode" ? val : Number(val);
+        const displayValue = (id === "operationMode" || id === "viewMode") ? val : Number(val);
         document.getElementById(`${id}-value`).textContent = formatValue(id, displayValue);
       });
     }
@@ -893,7 +1043,7 @@
     function onInputChange(id) {
       const path = controlMap[id];
       const input = document.getElementById(id);
-      const isModeControl = id === "operationMode";
+      const isModeControl = (id === "operationMode" || id === "viewMode");
       const value = isModeControl ? input.value : parseFloat(input.value);
       setByPath(config, path, value);
       normalizeConfig(config);
@@ -916,15 +1066,21 @@
         applyModePreset(config.operation.mode);
         return;
       }
+      if (id === 'viewMode') {
+        saveConfig(config);
+        applyViewMode();
+        return;
+      }
       saveConfig(config);
       syncModeLabel();
       createStoveFromConfig(config);
       renderPhysicsPanel();
+      applyViewMode();
     }
 
     Object.keys(controlMap).forEach((id) => {
       const el = document.getElementById(id);
-      if (id === "operationMode") {
+      if (id === "operationMode" || id === "viewMode") {
         el.addEventListener('change', () => onInputChange(id));
       } else {
         el.addEventListener('input', () => onInputChange(id));
@@ -972,6 +1128,67 @@
       syncExplodeButton();
     });
 
+
+
+    const saveConfigBtn = document.getElementById('saveConfigJson');
+    const loadConfigBtn = document.getElementById('loadConfigJson');
+    const loadConfigFileInput = document.getElementById('loadConfigFile');
+    const helpTourBtn = document.getElementById('showHelpTour');
+
+    saveConfigBtn.addEventListener('click', () => {
+      const payload = JSON.stringify(config, null, 2);
+      const blob = new Blob([payload], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `woodstove-config-${Date.now()}.json`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    });
+
+    loadConfigBtn.addEventListener('click', () => loadConfigFileInput.click());
+
+    loadConfigFileInput.addEventListener('change', async (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        config = normalizeConfig(deepMerge(defaultConfig, parsed));
+        saveConfig(config);
+        syncUIFromConfig();
+        Object.entries(visibilityMap).forEach(([id, key]) => { document.getElementById(id).checked = config.visibility[key]; });
+        document.getElementById('operationMode').value = config.operation.mode;
+        document.getElementById('viewMode').value = config.viewMode;
+        createStoveFromConfig(config);
+        syncModeLabel();
+        syncDoorButton();
+        syncExplodeButton();
+        renderPhysicsPanel();
+        applyViewMode();
+      } catch (e) {
+        alert('Не вдалося завантажити JSON конфіг. Перевірте формат файлу.');
+      } finally {
+        loadConfigFileInput.value = '';
+      }
+    });
+
+    helpTourBtn.addEventListener('click', () => {
+      alert(
+`Help / Tour
+
+` +
+`• Baffle: перенаправляє потік газів у камері та впливає на догорання.
+` +
+`• Air wash: подача повітря перед склом, зменшує закопчення.
+` +
+`• Режими роботи (start-up, low, medium, high, overnight): керують подачею повітря та полум'ям.
+` +
+`• Drawing mode: front/side/top з розмірними лініями та підписами.
+` +
+`• Save/Load JSON: збереження та відновлення конфігурації.`
+      );
+    });
+
     document.getElementById('resetConfig').addEventListener('click', () => {
       localStorage.removeItem(STORAGE_KEY);
       config = normalizeConfig(deepMerge(defaultConfig, {}));
@@ -981,8 +1198,10 @@
       syncDoorButton();
       syncExplodeButton();
       document.getElementById("operationMode").value = config.operation.mode;
+      document.getElementById("viewMode").value = config.viewMode;
       syncModeLabel();
       renderPhysicsPanel();
+      applyViewMode();
     });
 
     syncUIFromConfig();
@@ -991,13 +1210,16 @@
     syncDoorButton();
     syncExplodeButton();
     document.getElementById("operationMode").value = config.operation.mode;
+    document.getElementById("viewMode").value = config.viewMode;
     syncModeLabel();
     renderPhysicsPanel();
+    applyViewMode();
 
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
+      renderDrawingOverlay();
     });
 
     function animate() {
@@ -1026,6 +1248,7 @@
       }
       applyExplodeTransform();
       updateFlameFromMode(elapsed);
+      if (config.viewMode !== "3d") renderDrawingOverlay();
 
       controls.update();
       renderer.render(scene, camera);
