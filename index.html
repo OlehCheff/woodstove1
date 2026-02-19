@@ -111,16 +111,26 @@
 
     <h3>Режими (роботи та відображення)</h3>
     <div class="control-group">
-      <label for="operationMode">Режим роботи</label>
-      <select id="operationMode" style="width:100%; padding:6px; border-radius:6px; border:1px solid #bbb;">
-        <option value="start-up">start-up</option>
-        <option value="low">low</option>
-        <option value="medium">medium</option>
-        <option value="high">high</option>
-        <option value="overnight">overnight</option>
+      <label for="unifiedModeOption">Єдиний режим (робота/відображення)</label>
+      <select id="unifiedModeOption" style="width:100%; padding:6px; border-radius:6px; border:1px solid #bbb;">
+        <optgroup label="Робочі режими">
+          <option value="op:start-up">start-up</option>
+          <option value="op:low">low</option>
+          <option value="op:medium">medium</option>
+          <option value="op:high">high</option>
+          <option value="op:overnight">overnight</option>
+        </optgroup>
+        <optgroup label="Режими відображення">
+          <option value="view:3d">3D view</option>
+          <option value="view:drawing-front">Drawing front</option>
+          <option value="view:drawing-side">Drawing side</option>
+          <option value="view:drawing-top">Drawing top</option>
+        </optgroup>
       </select>
       <div class="value-display" id="operationMode-value"></div>
     </div>
+    <input type="hidden" id="operationMode">
+    <input type="hidden" id="viewMode">
 
 
     <h3>Sprint 6 — Температура і PhysicsModel</h3>
@@ -144,16 +154,6 @@
 
 
     <h3>UX (JSON / Help)</h3>
-    <div class="control-group">
-      <label for="viewMode">Режим перегляду</label>
-      <select id="viewMode" style="width:100%; padding:6px; border-radius:6px; border:1px solid #bbb;">
-        <option value="3d">3D view</option>
-        <option value="drawing-front">Drawing front</option>
-        <option value="drawing-side">Drawing side</option>
-        <option value="drawing-top">Drawing top</option>
-      </select>
-      <div class="value-display" id="viewMode-value"></div>
-    </div>
     <div class="btn-row" style="margin-top:8px;">
       <button id="saveConfigJson" class="secondary">Зберегти JSON</button>
       <button id="loadConfigJson" class="secondary">Завантажити JSON</button>
@@ -515,6 +515,13 @@
     }
 
 
+    function syncUnifiedModeSelect() {
+      const unified = document.getElementById('unifiedModeOption');
+      if (!unified) return;
+      unified.value = `op:${config.operation.mode}`;
+    }
+
+
     function renderPhysicsPanel() {
       if (!window.PhysicsModel || typeof window.PhysicsModel.evaluate !== 'function') {
         document.getElementById('physics-efficiency').textContent = 'PhysicsModel недоступний';
@@ -559,6 +566,9 @@
       syncUIFromConfig();
       const modeInput = document.getElementById('operationMode');
       if (modeInput) modeInput.value = config.operation.mode;
+      const viewInput = document.getElementById('viewMode');
+      if (viewInput) viewInput.value = config.viewMode;
+      syncUnifiedModeSelect();
       syncModeLabel();
       createStoveFromConfig(config);
       renderPhysicsPanel();
@@ -665,8 +675,10 @@
 
     function applyViewMode() {
       const mode = config.viewMode;
-      const modeLabel = document.getElementById('viewMode-value');
-      modeLabel.textContent = mode;
+      const viewInput = document.getElementById('viewMode');
+      if (viewInput) viewInput.value = mode;
+      const modeLabel = document.getElementById('operationMode-value');
+      if (modeLabel) modeLabel.textContent = `work: ${config.operation.mode} | view: ${mode}`;
 
       if (mode === '3d') {
         controls.enabled = true;
@@ -996,7 +1008,7 @@
         new THREE.CylinderGeometry(cfg.chimney.diameterCm / 2, cfg.chimney.diameterCm / 2, cfg.chimney.heightCm, 32),
         steel
       );
-      chimney.position.set(0, legH + h + cfg.chimney.heightCm / 2 - steelT * 0.15, -d * 0.2);
+      chimney.position.set(0, legH + h + cfg.chimney.heightCm / 2, -d * 0.2);
       chimney.castShadow = true;
       shell.add(chimney);
 
@@ -1072,7 +1084,8 @@
         const val = getByPath(config, path);
         input.value = val;
         const displayValue = (id === "operationMode" || id === "viewMode") ? val : Number(val);
-        document.getElementById(`${id}-value`).textContent = formatValue(id, displayValue);
+        const displayEl = document.getElementById(`${id}-value`);
+        if (displayEl) displayEl.textContent = formatValue(id, displayValue);
       });
     }
 
@@ -1085,7 +1098,8 @@
       normalizeConfig(config);
       const normalizedValue = getByPath(config, path);
       input.value = normalizedValue;
-      document.getElementById(`${id}-value`).textContent = formatValue(id, normalizedValue);
+      const displayEl = document.getElementById(`${id}-value`);
+      if (displayEl) displayEl.textContent = formatValue(id, normalizedValue);
       if (id === 'doorOpenAngleDeg') {
         doorTargetAngle = config.door.isOpen ? -THREE.MathUtils.degToRad(config.door.openAngleDeg) : 0;
       }
@@ -1098,15 +1112,6 @@
         const openOffset = 0;
         primaryShutterXTarget = closedOffset + (openOffset - closedOffset) * (config.primaryAir.openPct / 100);
       }
-      if (id === 'operationMode') {
-        applyModePreset(config.operation.mode);
-        return;
-      }
-      if (id === 'viewMode') {
-        saveConfig(config);
-        applyViewMode();
-        return;
-      }
       saveConfig(config);
       syncModeLabel();
       createStoveFromConfig(config);
@@ -1115,12 +1120,24 @@
     }
 
     Object.keys(controlMap).forEach((id) => {
+      if (id === 'operationMode' || id === 'viewMode') return;
       const el = document.getElementById(id);
-      if (id === "operationMode" || id === "viewMode") {
-        el.addEventListener('change', () => onInputChange(id));
-      } else {
-        el.addEventListener('input', () => onInputChange(id));
+      el.addEventListener('input', () => onInputChange(id));
+    });
+
+    document.getElementById('unifiedModeOption').addEventListener('change', (e) => {
+      const value = e.target.value || 'op:medium';
+      if (value.startsWith('op:')) {
+        config.operation.mode = value.slice(3);
+        normalizeConfig(config);
+        applyModePreset(config.operation.mode);
+      } else if (value.startsWith('view:')) {
+        config.viewMode = value.slice(5);
+        normalizeConfig(config);
+        saveConfig(config);
+        applyViewMode();
       }
+      syncUnifiedModeSelect();
     });
 
     const toggleDoorBtn = document.getElementById('toggleDoor');
@@ -1193,8 +1210,7 @@
         saveConfig(config);
         syncUIFromConfig();
         Object.entries(visibilityMap).forEach(([id, key]) => { document.getElementById(id).checked = config.visibility[key]; });
-        document.getElementById('operationMode').value = config.operation.mode;
-        document.getElementById('viewMode').value = config.viewMode;
+        syncUnifiedModeSelect();
         createStoveFromConfig(config);
         syncModeLabel();
         syncDoorButton();
@@ -1233,8 +1249,7 @@
       createStoveFromConfig(config);
       syncDoorButton();
       syncExplodeButton();
-      document.getElementById("operationMode").value = config.operation.mode;
-      document.getElementById("viewMode").value = config.viewMode;
+      syncUnifiedModeSelect();
       syncModeLabel();
       renderPhysicsPanel();
       applyViewMode();
