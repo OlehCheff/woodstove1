@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>3D Модель дров'яної печі</title>
+  <link rel="icon" href="data:,">
   <style>
     * {
       margin: 0;
@@ -18,6 +19,12 @@
       width: 100vw;
       height: 100vh;
       position: relative;
+    }
+    #drawing-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
     }
     #controls {
       position: absolute;
@@ -43,6 +50,18 @@
     input[type="range"] {
       width: 100%;
     }
+    input[type="number"] {
+      width: 100%;
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    select {
+      width: 100%;
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
     .value-display {
       font-size: 12px;
       color: #666;
@@ -52,14 +71,169 @@
       font-size: 18px;
       margin-bottom: 15px;
     }
+    h3 {
+      font-size: 15px;
+      margin: 14px 0 8px;
+    }
+    .apply-btn {
+      width: 100%;
+      padding: 8px;
+      border: none;
+      border-radius: 4px;
+      background: #2c7be5;
+      color: #fff;
+      cursor: pointer;
+    }
+    .section-title {
+      margin: 16px 0 8px;
+      padding-top: 8px;
+      border-top: 1px solid #ddd;
+      font-size: 14px;
+      color: #1c2d4a;
+    }
+    .inline-btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .help-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 12;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .help-overlay.open { display: flex; }
+    .help-card {
+      width: min(760px, 96vw);
+      max-height: 85vh;
+      overflow: auto;
+      background: #fff;
+      border-radius: 8px;
+      padding: 16px;
+    }
   </style>
 </head>
 <body>
   <div id="canvas-container"></div>
+  <canvas id="drawing-overlay"></canvas>
 
   <div id="controls">
     <h2>Параметри печі</h2>
 
+    <h3>Конфіг пічки (мм)</h3>
+    <div class="control-group"><label for="cfg-width">Ширина</label><input type="number" id="cfg-width"></div>
+    <div class="control-group"><label for="cfg-depth">Глибина</label><input type="number" id="cfg-depth"></div>
+    <div class="control-group"><label for="cfg-height">Висота</label><input type="number" id="cfg-height"></div>
+    <div class="control-group"><label for="cfg-chamberWidth">Внутрішня камера: ширина</label><input type="number" id="cfg-chamberWidth"></div>
+    <div class="control-group"><label for="cfg-chamberDepth">Внутрішня камера: глибина</label><input type="number" id="cfg-chamberDepth"></div>
+    <div class="control-group"><label for="cfg-chamberHeight">Внутрішня камера: висота</label><input type="number" id="cfg-chamberHeight"></div>
+    <div class="control-group"><label for="cfg-steelThickness">Товщина сталі</label><input type="number" id="cfg-steelThickness"></div>
+    <div class="control-group"><label for="cfg-firebrickThickness">Товщина шамоту</label><input type="number" id="cfg-firebrickThickness"></div>
+    <div class="control-group"><label for="cfg-chimneyDiameter">Діаметр димоходу</label><input type="number" id="cfg-chimneyDiameter"></div>
+    <div class="control-group"><label for="cfg-doorWidth">Дверця: ширина</label><input type="number" id="cfg-doorWidth"></div>
+    <div class="control-group"><label for="cfg-doorHeight">Дверця: висота</label><input type="number" id="cfg-doorHeight"></div>
+    <div class="control-group"><label for="cfg-glassWidth">Скло: ширина</label><input type="number" id="cfg-glassWidth"></div>
+    <div class="control-group"><label for="cfg-glassHeight">Скло: висота</label><input type="number" id="cfg-glassHeight"></div>
+    <div class="control-group"><label for="cfg-baffleHeight">Baffle: висота установки (від дна камери, мм)</label><input type="number" id="cfg-baffleHeight"></div>
+    <div class="control-group"><label for="cfg-baffleAngle">Baffle: кут (°)</label><input type="number" id="cfg-baffleAngle"></div>
+    <div class="control-group"><label for="cfg-baffleFrontGap">Baffle: передній зазор (мм)</label><input type="number" id="cfg-baffleFrontGap"></div>
+    <div class="control-group"><label for="cfg-baffleRearGap">Baffle: задній зазор (мм)</label><input type="number" id="cfg-baffleRearGap"></div>
+    <div class="control-group"><label for="cfg-doorMaxAngle">Дверця: макс. кут відкриття (°)</label><input type="number" id="cfg-doorMaxAngle"></div>
+    <div class="control-group"><label for="cfg-doorOpenAngle">Дверця: поточний кут (°)</label><input type="number" id="cfg-doorOpenAngle"></div>
+    <div class="control-group"><label for="cfg-primaryAirHoleCount">Первинне повітря: кількість отворів</label><input type="number" id="cfg-primaryAirHoleCount"></div>
+    <div class="control-group"><label for="cfg-primaryAirStartX">Первинне повітря: X старт (мм)</label><input type="number" id="cfg-primaryAirStartX"></div>
+    <div class="control-group"><label for="cfg-primaryAirStartY">Первинне повітря: Y старт (мм)</label><input type="number" id="cfg-primaryAirStartY"></div>
+    <div class="control-group"><label for="cfg-primaryAirSpacing">Первинне повітря: крок (мм)</label><input type="number" id="cfg-primaryAirSpacing"></div>
+    <div class="control-group"><label for="cfg-primaryAirShutter">Задвижка первинного повітря (% перекриття)</label><input type="number" id="cfg-primaryAirShutter"></div>
+    <div class="control-group"><label for="cfg-airWashOpening">Air wash: щілина відкриття (мм)</label><input type="number" id="cfg-airWashOpening"></div>
+    <div class="control-group"><label for="cfg-secondaryAir">Вторинне повітря (%)</label><input type="number" id="cfg-secondaryAir"></div>
+    <div class="control-group"><label for="cfg-flameIntensity">Інтенсивність полум'я (%)</label><input type="number" id="cfg-flameIntensity"></div>
+    <div class="control-group"><label for="cfg-fuelLoadVolume">Обʼєм закладки палива (л)</label><input type="number" id="cfg-fuelLoadVolume"></div>
+    <div class="control-group"><label for="cfg-explodeFrontOffset">Explode offset front (мм)</label><input type="number" id="cfg-explodeFrontOffset"></div>
+    <div class="control-group"><label for="cfg-explodeBackOffset">Explode offset back (мм)</label><input type="number" id="cfg-explodeBackOffset"></div>
+    <div class="control-group"><label for="cfg-explodeTopOffset">Explode offset top (мм)</label><input type="number" id="cfg-explodeTopOffset"></div>
+    <div class="control-group"><label for="cfg-explodeBaffleOffset">Explode offset baffle (мм)</label><input type="number" id="cfg-explodeBaffleOffset"></div>
+    <div class="control-group"><label for="cfg-explodeBrickOffset">Explode offset brick lining (мм)</label><input type="number" id="cfg-explodeBrickOffset"></div>
+    <div class="control-group"><button id="applyConfig" class="apply-btn">Apply</button></div>
+
+    <h3 class="section-title">Режими, метрики, видимість</h3>
+    <div class="control-group">
+      <label for="doorOpenControl">Відкриття дверцят (°):</label>
+      <input type="range" id="doorOpenControl" min="0" max="90" step="1">
+      <div class="value-display" id="doorOpenControl-value"></div>
+    </div>
+
+    <div class="control-group">
+      <button id="toggleDoor" class="apply-btn">Відкрити / Закрити дверця</button>
+    </div>
+
+    <div class="control-group">
+      <label for="airWashOpeningControl">Air wash щілина (мм):</label>
+      <input type="range" id="airWashOpeningControl" min="1" max="25" step="1">
+      <div class="value-display" id="airWashOpeningControl-value"></div>
+    </div>
+
+    <div class="control-group">
+      <label for="burnPreset">Режим роботи:</label>
+      <select id="burnPreset">
+        <option value="start-up">start-up</option>
+        <option value="low">low</option>
+        <option value="medium">medium</option>
+        <option value="high">high</option>
+        <option value="overnight">overnight</option>
+      </select>
+      <div class="value-display" id="burnPresetInfo"></div>
+      <div class="value-display" id="burnFormulaInfo">Формула: Q = η × ṁ × 4.0 кВт·год/кг; t = (V × 0.22 × 4.0 × η) / Q</div>
+      <table style="width:100%; margin-top:6px; border-collapse:collapse; font-size:12px;">
+        <tr><th style="text-align:left;">Показник</th><th style="text-align:right;">Значення</th></tr>
+        <tr><td>Орієнтовний КПД</td><td style="text-align:right;" id="metricEfficiency">-</td></tr>
+        <tr><td>Тепловіддача</td><td style="text-align:right;" id="metricHeatOutput">-</td></tr>
+        <tr><td>Час горіння (закладка)</td><td style="text-align:right;" id="metricBurnTime">-</td></tr>
+        <tr><td>Умовний потік повітря</td><td style="text-align:right;" id="metricAirFlow">-</td></tr>
+        <tr><td>Орієнтовна температура корпусу</td><td style="text-align:right;" id="metricTemperature">-</td></tr>
+      </table>
+      <div style="margin-top:8px; font-size:12px;">
+        <strong>Warnings / hints</strong>
+        <ul id="burnWarningsList" style="margin:6px 0 0 18px; padding:0;"></ul>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label for="viewMode">Режим перегляду:</label>
+      <select id="viewMode">
+        <option value="3d">3D view</option>
+        <option value="front">Drawing front</option>
+        <option value="side">Drawing side</option>
+        <option value="top">Drawing top</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label>
+        <input type="checkbox" id="drawingModeEnabled">
+        Drawing mode (розмірні лінії)
+      </label>
+    </div>
+
+    <div class="control-group">
+      <label><input type="checkbox" id="showChamotte" checked> Показувати шамот</label>
+      <label><input type="checkbox" id="showBaffle" checked> Показувати бафль</label>
+      <label><input type="checkbox" id="showAirChannels" checked> Показувати повітряні канали</label>
+      <label><input type="checkbox" id="showChimney" checked> Показувати димохід</label>
+    </div>
+
+    <div class="control-group">
+      <label for="explodeProgress">Explode view (%):</label>
+      <input type="range" id="explodeProgress" min="0" max="100" step="5">
+      <div class="value-display" id="explodeProgress-value"></div>
+      <button id="toggleExplode" class="apply-btn" style="margin-top:8px;">Explode / Reset</button>
+    </div>
+
+    <h3 class="section-title">Швидкі параметри та візуал</h3>
     <div class="control-group">
       <label for="width">Ширина (см):</label>
       <input type="range" id="width" min="30" max="100" step="5">
@@ -85,6 +259,84 @@
     </div>
 
     <div class="control-group">
+      <label for="steelThickness">Товщина сталі (мм, 3-5):</label>
+      <input type="range" id="steelThickness" min="3" max="5" step="1">
+      <div class="value-display" id="steelThickness-value"></div>
+    </div>
+
+    <div class="control-group">
+      <label for="firebrickThickness">Товщина шамоту (мм):</label>
+      <input type="range" id="firebrickThickness" min="30" max="80" step="5">
+      <div class="value-display" id="firebrickThickness-value"></div>
+    </div>
+
+    <div class="control-group">
+      <label for="doorWidthRatio">Ширина дверцят (% камери):</label>
+      <input type="range" id="doorWidthRatio" min="60" max="95" step="1">
+      <div class="value-display" id="doorWidthRatio-value"></div>
+    </div>
+
+    <div class="control-group">
+      <label for="doorHeightRatio">Висота дверцят (% камери):</label>
+      <input type="range" id="doorHeightRatio" min="60" max="95" step="1">
+      <div class="value-display" id="doorHeightRatio-value"></div>
+    </div>
+
+    <div class="control-group">
+      <label for="glassWidthRatio">Ширина скла (% дверцят):</label>
+      <input type="range" id="glassWidthRatio" min="40" max="85" step="1">
+      <div class="value-display" id="glassWidthRatio-value"></div>
+    </div>
+
+    <div class="control-group">
+      <label for="glassHeightRatio">Висота скла (% дверцят):</label>
+      <input type="range" id="glassHeightRatio" min="35" max="80" step="1">
+      <div class="value-display" id="glassHeightRatio-value"></div>
+    </div>
+
+    <div class="control-group">
+      <label for="chimneyDiameter">Діаметр димоходу (мм, 150-200):</label>
+      <input type="range" id="chimneyDiameter" min="150" max="200" step="5">
+      <div class="value-display" id="chimneyDiameter-value"></div>
+    </div>
+
+    <div class="control-group">
+      <label for="baffleHeight">Висота бафля (% висоти камери):</label>
+      <input type="range" id="baffleHeight" min="20" max="85" step="1">
+      <div class="value-display" id="baffleHeight-value"></div>
+    </div>
+
+    <div class="control-group">
+      <label for="baffleAngle">Кут бафля (45°-90°):</label>
+      <input type="range" id="baffleAngle" min="45" max="90" step="1">
+      <div class="value-display" id="baffleAngle-value"></div>
+    </div>
+
+    <div class="control-group">
+      <label for="airHoleCount">Кількість отворів повітря:</label>
+      <input type="range" id="airHoleCount" min="1" max="8" step="1">
+      <div class="value-display" id="airHoleCount-value"></div>
+    </div>
+
+    <div class="control-group">
+      <label for="airHoleStartX">Позиція отворів X (мм):</label>
+      <input type="range" id="airHoleStartX" min="-120" max="120" step="5">
+      <div class="value-display" id="airHoleStartX-value"></div>
+    </div>
+
+    <div class="control-group">
+      <label for="airHoleStartY">Позиція отворів Y (мм):</label>
+      <input type="range" id="airHoleStartY" min="-120" max="120" step="5">
+      <div class="value-display" id="airHoleStartY-value"></div>
+    </div>
+
+    <div class="control-group">
+      <label for="airHoleSpacing">Крок отворів (мм):</label>
+      <input type="range" id="airHoleSpacing" min="20" max="90" step="5">
+      <div class="value-display" id="airHoleSpacing-value"></div>
+    </div>
+
+    <div class="control-group">
       <label for="bodyColor">Колір корпусу:</label>
       <input type="color" id="bodyColor">
     </div>
@@ -107,31 +359,174 @@
     </div>
 
     <div class="control-group">
+      <label>
+        <input type="checkbox" id="gridEnabled">
+        Показати сітку
+      </label>
+    </div>
+
+    <div class="control-group">
+      <label>
+        <input type="checkbox" id="axesEnabled">
+        Показати осі координат
+      </label>
+    </div>
+
+
+    <h3 class="section-title">Режими і довідка</h3>
+    <div class="control-group inline-btn-row">
+      <button id="exportConfig" class="apply-btn" type="button">Експорт JSON</button>
+      <button id="importConfigBtn" class="apply-btn" type="button">Імпорт JSON</button>
+      <input type="file" id="importConfigFile" accept="application/json" style="display:none;">
+    </div>
+    <div class="control-group">
+      <button id="openHelp" class="apply-btn" type="button">Tour / Help</button>
+    </div>
+    <div class="control-group">
       <button id="resetConfig">Скинути налаштування</button>
     </div>
   </div>
 
+  <div id="helpOverlay" class="help-overlay">
+    <div class="help-card">
+      <h3>Tour / Help</h3>
+      <p><strong>Baffle (бафль):</strong> внутрішня пластина у верхній частині камери. Керує маршрутом гарячих газів і впливає на теплообмін.</p>
+      <p><strong>Air wash:</strong> канал/щілина подачі повітря вздовж скла дверцят для зменшення закопчення.</p>
+      <p><strong>Режими:</strong> start-up, low, medium, high, overnight — це пресети, що змінюють первинне/вторинне повітря, air wash і інтенсивність полумʼя.</p>
+      <p><strong>Drawing mode:</strong> фіксовані фронт/бік/верх з розмірними лініями для орієнтації і перевірки габаритів.</p>
+      <p><strong>Explode view:</strong> рознесення вузлів для візуальної перевірки шарів і внутрішніх компонентів.</p>
+      <div class="control-group">
+        <button id="closeHelp" class="apply-btn" type="button">Закрити</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="./physics-model.js"></script>
   <script>
     const STORAGE_KEY = 'woodstove1Config';
 
+    const defaultStoveConfig = {
+      width: 600,
+      depth: 600,
+      height: 1200,
+      chamberWidth: 500,
+      chamberDepth: 500,
+      chamberHeight: 450,
+      steelThickness: 4,
+      firebrickThickness: 50,
+      chimneyDiameter: 180,
+      doorWidth: 450,
+      doorHeight: 360,
+      glassWidth: 280,
+      glassHeight: 210,
+      baffleHeight: 320,
+      baffleAngle: 45,
+      baffleFrontGap: 120,
+      baffleRearGap: 80,
+      doorMaxAngle: 85,
+      doorOpenAngle: 0,
+      primaryAirHoleCount: 4,
+      primaryAirStartX: -75,
+      primaryAirStartY: -140,
+      primaryAirSpacing: 65,
+      primaryAirShutter: 45,
+      airWashOpening: 8,
+      secondaryAir: 55,
+      flameIntensity: 60,
+      fuelLoadVolume: 32,
+      explodeFrontOffset: 80,
+      explodeBackOffset: 80,
+      explodeTopOffset: 70,
+      explodeBaffleOffset: 60,
+      explodeBrickOffset: 70
+    };
+
     const defaultConfig = {
-      width: 50,
-      depth: 50,
-      height: 80,
-      legs: 20,
+      width: 60,
+      depth: 60,
+      height: 120,
+      legs: 12,
+      steelThickness: 4,
+      firebrickThickness: 50,
+      doorWidthRatio: 90,
+      doorHeightRatio: 82,
+      glassWidthRatio: 62,
+      glassHeightRatio: 58,
+      chimneyDiameter: 180,
+      baffleHeight: 32,
+      baffleAngle: 65,
+      airHoleCount: 4,
+      airHoleStartX: -75,
+      airHoleStartY: -140,
+      airHoleSpacing: 65,
+      viewMode: '3d',
+      drawingModeEnabled: false,
+      showChamotte: true,
+      showBaffle: true,
+      showAirChannels: true,
+      showChimney: true,
+      explodeProgress: 0,
+      burnPreset: 'medium',
+      gridEnabled: true,
+      axesEnabled: true,
+      stove: { ...defaultStoveConfig },
       bodyColor: '#333333',
       doorColor: '#222222',
       legColor: '#1a1a1a',
       fireEnabled: true
     };
 
+    // Масштаб сцени зафіксовано: 1 одиниця = 1 сантиметр.
+    const SCENE_UNIT = 'cm';
+    const MM_PER_SCENE_UNIT = 10;
+    const mmToUnits = (value) => value / MM_PER_SCENE_UNIT;
+
+    const burnPresets = {
+      'start-up': { primaryAirShutter: 15, secondaryAir: 35, airWashOpening: 18, flameIntensity: 90 },
+      low: { primaryAirShutter: 70, secondaryAir: 45, airWashOpening: 6, flameIntensity: 30 },
+      medium: { primaryAirShutter: 45, secondaryAir: 55, airWashOpening: 10, flameIntensity: 60 },
+      high: { primaryAirShutter: 20, secondaryAir: 65, airWashOpening: 16, flameIntensity: 100 },
+      overnight: { primaryAirShutter: 82, secondaryAir: 28, airWashOpening: 4, flameIntensity: 20 }
+    };
+
+
+    const physicsModel = new PhysicsModel();
+
+    /**
+     * PhysicsModel interface
+     * Input:
+     * - mode
+     * - primaryAirShutter (% closed)
+     * - secondaryAir (%)
+     * - airWashOpening (mm)
+     * - chamber dimensions -> chamberVolumeM3
+     * - primary hole geometry -> primaryHoleAreaM2
+     * Output:
+     * - airFlowM3H, temperatureC, efficiencyPct, heatOutputKw, burnTimeHours
+     * - combustion { flameNorm, secondaryNorm, temperatureNorm, emissiveBase/amplitude/speed }
+     * - warnings[] for UI hints
+     */
+    const calculatePhysicsState = (mode, stoveParams = {}) => {
+      const input = physicsModel.buildInput(stoveParams, mode || 'medium');
+      return physicsModel.compute(input);
+    };
+
     function loadConfig() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? { ...defaultConfig, ...JSON.parse(raw) } : { ...defaultConfig };
+        if (!raw) {
+          return { ...defaultConfig, stove: { ...defaultStoveConfig } };
+        }
+        const parsed = JSON.parse(raw);
+        return {
+          ...defaultConfig,
+          ...parsed,
+          stove: { ...defaultStoveConfig, ...(parsed.stove || {}) }
+        };
       } catch (e) {
-        return { ...defaultConfig };
+        return { ...defaultConfig, stove: { ...defaultStoveConfig } };
       }
     }
 
@@ -153,13 +548,18 @@
       0.1,
       1000
     );
-    camera.position.set(2, 2, 3);
-    camera.lookAt(0, 0, 0);
+    camera.position.set(220, 180, 260);
+    camera.lookAt(0, 60, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
     document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+    const drawingCanvas = document.getElementById('drawing-overlay');
+    const drawingCtx = drawingCanvas.getContext('2d');
+    drawingCanvas.width = window.innerWidth;
+    drawingCanvas.height = window.innerHeight;
 
     const ambientLight = new THREE.AmbientLight(0x404040, 2);
     scene.add(ambientLight);
@@ -169,67 +569,709 @@
     directionalLight.castShadow = true;
     scene.add(directionalLight);
 
-    const floorGeometry = new THREE.PlaneGeometry(10, 10);
+    const floorGeometry = new THREE.PlaneGeometry(1000, 1000);
     const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
     const floor = new THREE.Mesh(floorGeometry, floorMaterial);
     floor.rotation.x = -Math.PI / 2;
-    floor.position.y = -0.5;
+    floor.position.y = -50;
     floor.receiveShadow = true;
     scene.add(floor);
 
+    const gridHelper = new THREE.GridHelper(1000, 100, 0x666666, 0xaaaaaa);
+    gridHelper.position.y = -49.9;
+    scene.add(gridHelper);
+
+    const axesHelper = new THREE.AxesHelper(120);
+    axesHelper.position.set(0, 0, 0);
+    scene.add(axesHelper);
+
+    // Завжди видимий маркер, щоб об'єкт був явно присутній у сцені
+    const visibleMarker = new THREE.Mesh(
+      new THREE.SphereGeometry(6, 20, 20),
+      new THREE.MeshStandardMaterial({ color: 0xff2d2d, emissive: 0x220000 })
+    );
+    visibleMarker.position.set(-120, 20, 120);
+    visibleMarker.name = 'visibleMarker';
+    scene.add(visibleMarker);
+
+    const orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
+    orbitControls.enableDamping = true;
+    orbitControls.dampingFactor = 0.08;
+    orbitControls.target.set(0, 60, 0);
+    orbitControls.minDistance = 120;
+    orbitControls.maxDistance = 900;
+
+    function applyViewMode(mode) {
+      const target = new THREE.Vector3(0, 60, 0);
+      if (mode === 'front') {
+        camera.position.set(0, 120, 420);
+        camera.up.set(0, 1, 0);
+        orbitControls.enabled = false;
+      } else if (mode === 'side') {
+        camera.position.set(420, 120, 0);
+        camera.up.set(0, 1, 0);
+        orbitControls.enabled = false;
+      } else if (mode === 'top') {
+        camera.position.set(0, 520, 0.01);
+        camera.up.set(0, 0, -1);
+        orbitControls.enabled = false;
+      } else {
+        camera.position.set(220, 180, 260);
+        camera.up.set(0, 1, 0);
+        orbitControls.enabled = true;
+      }
+      camera.lookAt(target);
+      orbitControls.target.copy(target);
+      orbitControls.update();
+    }
+
+    function buildViewData(stove) {
+      const w = mmToUnits(stove.width);
+      const d = mmToUnits(stove.depth);
+      const h = mmToUnits(stove.height);
+      const doorW = mmToUnits(stove.doorWidth);
+      const doorH = mmToUnits(stove.doorHeight);
+
+      const frontView = {
+        name: 'frontView',
+        dimensions: [
+          { label: 'W', p1: { x: -w / 2, y: 0, z: d / 2 + 8 }, p2: { x: w / 2, y: 0, z: d / 2 + 8 }, value: `${stove.width} мм` },
+          { label: 'H', p1: { x: w / 2 + 8, y: 0, z: d / 2 + 8 }, p2: { x: w / 2 + 8, y: h, z: d / 2 + 8 }, value: `${stove.height} мм` },
+          { label: 'Door W', p1: { x: -doorW / 2, y: h * 0.4, z: d / 2 + 10 }, p2: { x: doorW / 2, y: h * 0.4, z: d / 2 + 10 }, value: `${stove.doorWidth} мм` }
+        ]
+      };
+
+      const sideView = {
+        name: 'sideView',
+        dimensions: [
+          { label: 'D', p1: { x: w / 2 + 8, y: 0, z: -d / 2 }, p2: { x: w / 2 + 8, y: 0, z: d / 2 }, value: `${stove.depth} мм` },
+          { label: 'H', p1: { x: w / 2 + 12, y: 0, z: d / 2 }, p2: { x: w / 2 + 12, y: h, z: d / 2 }, value: `${stove.height} мм` },
+          { label: 'Baffle angle', p1: { x: w / 2 + 14, y: h * 0.35, z: -10 }, p2: { x: w / 2 + 14, y: h * 0.35, z: 10 }, value: `${stove.baffleAngle}°` }
+        ]
+      };
+
+      const topView = {
+        name: 'topView',
+        dimensions: [
+          { label: 'W', p1: { x: -w / 2, y: h + 8, z: d / 2 + 8 }, p2: { x: w / 2, y: h + 8, z: d / 2 + 8 }, value: `${stove.width} мм` },
+          { label: 'D', p1: { x: w / 2 + 8, y: h + 8, z: -d / 2 }, p2: { x: w / 2 + 8, y: h + 8, z: d / 2 }, value: `${stove.depth} мм` },
+          { label: 'Chimney Ø', p1: { x: -8, y: h + 8, z: -d * 0.18 }, p2: { x: 8, y: h + 8, z: -d * 0.18 }, value: `${stove.chimneyDiameter} мм` }
+        ]
+      };
+
+      return { frontView, sideView, topView };
+    }
+
+    function drawDimensionLine(p1, p2, text) {
+      const v1 = new THREE.Vector3(p1.x, p1.y, p1.z).project(camera);
+      const v2 = new THREE.Vector3(p2.x, p2.y, p2.z).project(camera);
+      const x1 = (v1.x * 0.5 + 0.5) * drawingCanvas.width;
+      const y1 = (-v1.y * 0.5 + 0.5) * drawingCanvas.height;
+      const x2 = (v2.x * 0.5 + 0.5) * drawingCanvas.width;
+      const y2 = (-v2.y * 0.5 + 0.5) * drawingCanvas.height;
+
+      drawingCtx.strokeStyle = '#0b3d91';
+      drawingCtx.lineWidth = 2;
+      drawingCtx.beginPath();
+      drawingCtx.moveTo(x1, y1);
+      drawingCtx.lineTo(x2, y2);
+      drawingCtx.stroke();
+
+      const mx = (x1 + x2) / 2;
+      const my = (y1 + y2) / 2;
+      drawingCtx.fillStyle = '#0b3d91';
+      drawingCtx.font = '12px Arial';
+      drawingCtx.fillText(text, mx + 6, my - 6);
+    }
+
+    function renderDrawingOverlay() {
+      drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+      if (!config.drawingModeEnabled) {
+        return;
+      }
+
+      const stove = config.stove || defaultStoveConfig;
+      const views = buildViewData(stove);
+      const selected = config.viewMode === 'front' ? views.frontView
+        : config.viewMode === 'side' ? views.sideView
+        : config.viewMode === 'top' ? views.topView
+        : null;
+
+      if (!selected) {
+        return;
+      }
+
+      selected.dimensions.forEach((dim) => {
+        drawDimensionLine(dim.p1, dim.p2, `${dim.label}: ${dim.value}`);
+      });
+    }
+
     let stoveGroup = new THREE.Group();
     scene.add(stoveGroup);
+    let doorHingePivot = null;
+    let doorHitArea = null;
+    let currentDoorAngleDeg = 0;
+    let targetDoorAngleDeg = 0;
+    const doorAnimSpeedDegPerFrame = 2;
+    let airWashSlotMesh = null;
+    let currentAirWashOpeningUnits = 0;
+    let targetAirWashOpeningUnits = 0;
+    let flameParticles = [];
+    let explodeNodes = [];
+    let currentExplodeProgress = 0;
+    let targetExplodeProgress = 0;
+    let physicsState = null;
 
-    function createStove(width, depth, height, legHeight, appearance) {
+    function registerExplodeNode(node, direction, offsetUnits) {
+      node.userData.basePosition = node.position.clone();
+      explodeNodes.push({ node, direction, offsetUnits });
+    }
+
+    function applyExplodeTransforms(progressPercent) {
+      const factor = THREE.MathUtils.clamp(progressPercent / 100, 0, 1);
+      explodeNodes.forEach(({ node, direction, offsetUnits }) => {
+        if (!node?.userData?.basePosition) {
+          return;
+        }
+        node.position.copy(node.userData.basePosition).addScaledVector(direction, offsetUnits * factor);
+      });
+    }
+
+    function createStove(width, depth, height, legHeight, params, appearance) {
       while (stoveGroup.children.length > 0) {
         stoveGroup.remove(stoveGroup.children[0]);
       }
+      doorHingePivot = null;
+      doorHitArea = null;
+      airWashSlotMesh = null;
+      explodeNodes = [];
+      flameParticles = [];
 
-      const w = width / 100;
-      const d = depth / 100;
-      const h = height / 100;
-      const lh = legHeight / 100;
+      const w = width;
+      const d = depth;
+      const h = height;
+      const lh = legHeight;
 
-      const metalMaterial = new THREE.MeshStandardMaterial({
-        color: new THREE.Color(appearance.bodyColor),
-        metalness: 0.8,
-        roughness: 0.2
+      // Базова архітектура в мм:
+      // - Загальні габарити: 600x600x1200
+      // - Внутрішня камера: 500x500x450
+      // (у сцені 1 одиниця = 1 сантиметр)
+      const steelThickness = mmToUnits(params.steelThickness);
+      const firebrickThickness = mmToUnits(params.firebrickThickness);
+      const chamberW = Math.min(mmToUnits(params.chamberWidth), w - steelThickness * 2);
+      const chamberD = Math.min(mmToUnits(params.chamberDepth), d - steelThickness * 2);
+      const chamberH = Math.min(mmToUnits(params.chamberHeight), h - 10);
+      const bodyHeight = Math.max(h * 0.65, chamberH + 18);
+      const bodyBottomY = lh;
+      const bodyCenterY = bodyBottomY + bodyHeight / 2;
+
+      const combustionState = physicsState?.outputs?.combustion || { flameNorm: 0.6, temperatureNorm: 0.4 };
+      const flameIntensityFactor = THREE.MathUtils.clamp(combustionState.temperatureNorm + 0.2, 0.1, 1.3);
+
+      const makeTempMaterial = (baseLevel) => {
+        const cold = new THREE.Color(0x4e5f7a);
+        const warm = new THREE.Color(appearance.bodyColor);
+        const hot = new THREE.Color(0xff6b2d);
+        const t = THREE.MathUtils.clamp(baseLevel * flameIntensityFactor, 0, 1);
+        const color = cold.clone().lerp(warm, Math.min(1, t * 0.75)).lerp(hot, Math.max(0, t - 0.5) * 2);
+        return new THREE.MeshStandardMaterial({
+          color,
+          emissive: hot.clone().multiplyScalar(Math.max(0, t - 0.55) * 0.35),
+          metalness: 0.8,
+          roughness: 0.25
+        });
+      };
+
+      const steelLayerMaterial = new THREE.MeshStandardMaterial({
+        color: 0x5a5f66,
+        metalness: 0.9,
+        roughness: 0.25
       });
 
-      const bodyGeometry = new THREE.BoxGeometry(w, h * 0.6, d);
-      const body = new THREE.Mesh(bodyGeometry, metalMaterial);
-      body.position.y = lh + (h * 0.6) / 2;
-      body.castShadow = true;
-      stoveGroup.add(body);
-
-      const topGeometry = new THREE.BoxGeometry(w * 0.7, h * 0.4, d * 0.7);
-      const top = new THREE.Mesh(topGeometry, metalMaterial);
-      top.position.y = lh + h * 0.6 + (h * 0.4) / 2;
-      top.castShadow = true;
-      stoveGroup.add(top);
-
-      const doorGeometry = new THREE.BoxGeometry(w * 0.6, h * 0.4, 0.02);
-      const doorMaterial = new THREE.MeshStandardMaterial({
-        color: new THREE.Color(appearance.doorColor)
+      const firebrickMaterial = new THREE.MeshStandardMaterial({
+        color: 0xc47a4d,
+        roughness: 0.95,
+        metalness: 0.02
       });
-      const door = new THREE.Mesh(doorGeometry, doorMaterial);
-      door.position.set(0, lh + h * 0.3, d / 2 + 0.01);
-      door.castShadow = true;
-      stoveGroup.add(door);
 
-      const windowGeometry = new THREE.BoxGeometry(w * 0.3, h * 0.2, 0.03);
+      const darkMetalMaterial = new THREE.MeshStandardMaterial({
+        color: new THREE.Color(appearance.doorColor),
+        metalness: 0.75,
+        roughness: 0.3
+      });
+
+      const glassMaterial = new THREE.MeshStandardMaterial({
+        color: 0x9cc4d6,
+        transparent: true,
+        opacity: 0.45,
+        roughness: 0.05,
+        metalness: 0.1
+      });
+
+      // 1) Корпус: окремі сталеві меші (дно, бокові, задня стінка, верхня кришка)
+      const bodyGroup = new THREE.Group();
+      bodyGroup.name = 'bodyAssembly';
+      stoveGroup.add(bodyGroup);
+      registerExplodeNode(bodyGroup, new THREE.Vector3(0, 0, 1), mmToUnits(params.explodeFrontOffset || 80));
+
+      const addPanel = (group, name, size, pos, material) => {
+        const panel = new THREE.Mesh(
+          new THREE.BoxGeometry(size.x, size.y, size.z),
+          material
+        );
+        panel.position.set(pos.x, pos.y, pos.z);
+        panel.castShadow = true;
+        panel.name = name;
+        group.add(panel);
+        return panel;
+      };
+
+      addPanel(
+        bodyGroup,
+        'bodyBottom',
+        { x: w, y: steelThickness, z: d },
+        { x: 0, y: bodyBottomY + steelThickness / 2, z: 0 },
+        makeTempMaterial(0.25)
+      );
+
+      addPanel(
+        bodyGroup,
+        'bodyLeftWall',
+        { x: steelThickness, y: bodyHeight, z: d },
+        { x: -(w / 2 - steelThickness / 2), y: bodyCenterY, z: 0 },
+        makeTempMaterial(0.6)
+      );
+
+      addPanel(
+        bodyGroup,
+        'bodyRightWall',
+        { x: steelThickness, y: bodyHeight, z: d },
+        { x: w / 2 - steelThickness / 2, y: bodyCenterY, z: 0 },
+        makeTempMaterial(0.6)
+      );
+
+      addPanel(
+        bodyGroup,
+        'bodyBackWall',
+        { x: w, y: bodyHeight, z: steelThickness },
+        { x: 0, y: bodyCenterY, z: -(d / 2 - steelThickness / 2) },
+        makeTempMaterial(0.7)
+      );
+
+      addPanel(
+        bodyGroup,
+        'bodyTopCover',
+        { x: w, y: steelThickness, z: d },
+        { x: 0, y: bodyBottomY + bodyHeight - steelThickness / 2, z: 0 },
+        makeTempMaterial(0.95)
+      );
+
+      // 2) Внутрішній сталевий шар як окрема геометрія
+      const steelLayer = new THREE.Group();
+      steelLayer.name = 'steelLayer';
+      stoveGroup.add(steelLayer);
+
+      const steelEnvelopeW = chamberW + firebrickThickness * 2 + steelThickness * 2;
+      const steelEnvelopeD = chamberD + firebrickThickness * 2 + steelThickness * 2;
+      const steelEnvelopeH = chamberH + firebrickThickness * 2 + steelThickness * 2;
+      const chamberCenterY = bodyBottomY + steelThickness + chamberH / 2 + 6;
+
+      addPanel(
+        steelLayer,
+        'steelLayerBottom',
+        { x: steelEnvelopeW, y: steelThickness, z: steelEnvelopeD },
+        { x: 0, y: chamberCenterY - steelEnvelopeH / 2 + steelThickness / 2, z: 0 },
+        steelLayerMaterial
+      );
+
+      addPanel(
+        steelLayer,
+        'steelLayerLeft',
+        { x: steelThickness, y: steelEnvelopeH, z: steelEnvelopeD },
+        { x: -(steelEnvelopeW / 2 - steelThickness / 2), y: chamberCenterY, z: 0 },
+        steelLayerMaterial
+      );
+
+      addPanel(
+        steelLayer,
+        'steelLayerRight',
+        { x: steelThickness, y: steelEnvelopeH, z: steelEnvelopeD },
+        { x: steelEnvelopeW / 2 - steelThickness / 2, y: chamberCenterY, z: 0 },
+        steelLayerMaterial
+      );
+
+      addPanel(
+        steelLayer,
+        'steelLayerBack',
+        { x: steelEnvelopeW, y: steelEnvelopeH, z: steelThickness },
+        { x: 0, y: chamberCenterY, z: -(steelEnvelopeD / 2 - steelThickness / 2) },
+        steelLayerMaterial
+      );
+
+      addPanel(
+        steelLayer,
+        'steelLayerTop',
+        { x: steelEnvelopeW, y: steelThickness, z: steelEnvelopeD },
+        { x: 0, y: chamberCenterY + steelEnvelopeH / 2 - steelThickness / 2, z: 0 },
+        steelLayerMaterial
+      );
+
+      // 3) Футерівка шамотом: окремий геометричний шар з урахуванням товщини
+      const firebrickLayer = new THREE.Group();
+      firebrickLayer.name = 'firebrickLayer';
+      firebrickLayer.visible = !!config.showChamotte;
+      stoveGroup.add(firebrickLayer);
+      registerExplodeNode(firebrickLayer, new THREE.Vector3(0, 0, 1), mmToUnits(params.explodeBrickOffset || 70));
+
+      const firebrickOuterW = chamberW + firebrickThickness * 2;
+      const firebrickOuterD = chamberD + firebrickThickness * 2;
+      const firebrickOuterH = chamberH + firebrickThickness * 2;
+
+      addPanel(
+        firebrickLayer,
+        'firebrickBottom',
+        { x: firebrickOuterW, y: firebrickThickness, z: firebrickOuterD },
+        { x: 0, y: chamberCenterY - firebrickOuterH / 2 + firebrickThickness / 2, z: 0 },
+        firebrickMaterial
+      );
+
+      addPanel(
+        firebrickLayer,
+        'firebrickLeft',
+        { x: firebrickThickness, y: firebrickOuterH, z: firebrickOuterD },
+        { x: -(firebrickOuterW / 2 - firebrickThickness / 2), y: chamberCenterY, z: 0 },
+        firebrickMaterial
+      );
+
+      addPanel(
+        firebrickLayer,
+        'firebrickRight',
+        { x: firebrickThickness, y: firebrickOuterH, z: firebrickOuterD },
+        { x: firebrickOuterW / 2 - firebrickThickness / 2, y: chamberCenterY, z: 0 },
+        firebrickMaterial
+      );
+
+      addPanel(
+        firebrickLayer,
+        'firebrickBack',
+        { x: firebrickOuterW, y: firebrickOuterH, z: firebrickThickness },
+        { x: 0, y: chamberCenterY, z: -(firebrickOuterD / 2 - firebrickThickness / 2) },
+        firebrickMaterial
+      );
+
+      addPanel(
+        firebrickLayer,
+        'firebrickTop',
+        { x: firebrickOuterW, y: firebrickThickness, z: firebrickOuterD },
+        { x: 0, y: chamberCenterY + firebrickOuterH / 2 - firebrickThickness / 2, z: 0 },
+        firebrickMaterial
+      );
+
+      // 4) Внутрішня камера (firebox) як окрема група
+      const fireboxGroup = new THREE.Group();
+      fireboxGroup.name = 'fireboxGroup';
+      stoveGroup.add(fireboxGroup);
+
+      const chamberGeometry = new THREE.BoxGeometry(chamberW, chamberH, chamberD);
+      const chamberMaterial = new THREE.MeshStandardMaterial({
+        color: 0x151515,
+        roughness: 0.85,
+        metalness: 0.15,
+        side: THREE.DoubleSide
+      });
+      const innerChamber = new THREE.Mesh(chamberGeometry, chamberMaterial);
+      innerChamber.position.set(0, chamberCenterY, 0);
+      innerChamber.name = 'innerChamber';
+      fireboxGroup.add(innerChamber);
+
+      // Спрощена візуалізація полум'я (particle-like cones) всередині камери
+      const flameGroup = new THREE.Group();
+      flameGroup.position.set(0, innerChamber.position.y - chamberH * 0.35, 0);
+      flameGroup.name = 'flameGroup';
+      fireboxGroup.add(flameGroup);
+
+      const flameIntensityNorm = THREE.MathUtils.clamp((physicsState?.outputs?.combustion?.flameNorm ?? 0.6), 0.1, 1.2);
+      const flameColorLow = new THREE.Color(0xff5a1f);
+      const flameColorHigh = new THREE.Color(0xffe36a);
+      const flameColor = flameColorLow.clone().lerp(flameColorHigh, flameIntensityNorm);
+      const particleCount = 14;
+      for (let i = 0; i < particleCount; i++) {
+        const radius = THREE.MathUtils.randFloat(0.6, 1.3);
+        const heightBase = THREE.MathUtils.randFloat(6, 14) * flameIntensityNorm;
+        const geom = new THREE.ConeGeometry(radius, Math.max(2, heightBase), 10);
+        const mat = new THREE.MeshStandardMaterial({
+          color: flameColor,
+          emissive: flameColor.clone().multiplyScalar(0.45),
+          emissiveIntensity: 0.6,
+          transparent: true,
+          opacity: 0.7,
+          roughness: 0.9,
+          metalness: 0
+        });
+        const particle = new THREE.Mesh(geom, mat);
+        const angle = (Math.PI * 2 * i) / particleCount;
+        const rad = THREE.MathUtils.randFloat(0, chamberW * 0.18);
+        particle.position.set(Math.cos(angle) * rad, heightBase * 0.5, Math.sin(angle) * rad);
+        particle.userData = {
+          baseHeight: heightBase,
+          phase: Math.random() * Math.PI * 2,
+          x0: particle.position.x,
+          z0: particle.position.z,
+          flameNorm: flameIntensityNorm
+        };
+        flameGroup.add(particle);
+        flameParticles.push(particle);
+      }
+
+      // 5) Бафль (baffle): висота, кут та зазори спереду/ззаду з конфігу
+      const baffleThickness = 2;
+      const baffleFrontGap = Math.max(5, mmToUnits(params.baffleFrontGap || 120));
+      const baffleRearGap = Math.max(5, mmToUnits(params.baffleRearGap || 80));
+      const baffleDepth = Math.max(8, chamberD - baffleFrontGap - baffleRearGap);
+      const baffleWidth = chamberW * 0.95;
+      const baffleGeometry = new THREE.BoxGeometry(baffleWidth, baffleThickness, baffleDepth);
+      const baffle = new THREE.Mesh(baffleGeometry, firebrickMaterial);
+
+      const baffleHeightFromBottom = THREE.MathUtils.clamp(
+        mmToUnits(params.baffleHeight || 320),
+        5,
+        chamberH - 5
+      );
+      const baffleAngleDeg = THREE.MathUtils.clamp(params.baffleAngle || 45, 0, 90);
+      const baffleCenterZ = (baffleFrontGap - baffleRearGap) / 2;
+
+      baffle.position.set(
+        0,
+        innerChamber.position.y - chamberH / 2 + baffleHeightFromBottom,
+        baffleCenterZ
+      );
+      baffle.rotation.x = -THREE.MathUtils.degToRad(baffleAngleDeg);
+      baffle.name = 'baffle';
+      baffle.visible = !!config.showBaffle;
+      fireboxGroup.add(baffle);
+      registerExplodeNode(baffle, new THREE.Vector3(0, 1, 0), mmToUnits(params.explodeBaffleOffset || 60));
+
+      // Важіль регулювання бафля справа пічки (при фронтальному огляді)
+      const leverPivotY = baffle.position.y;
+      const leverRodGeometry = new THREE.CylinderGeometry(0.8, 0.8, d * 0.55, 16);
+      const leverRod = new THREE.Mesh(leverRodGeometry, steelLayerMaterial);
+      leverRod.rotation.x = Math.PI / 2;
+      leverRod.position.set(w / 2 + 3, leverPivotY, 0);
+      leverRod.name = 'baffleLeverRod';
+      leverRod.visible = !!config.showBaffle;
+      stoveGroup.add(leverRod);
+
+      const leverHandleGeometry = new THREE.SphereGeometry(1.6, 16, 16);
+      const leverHandle = new THREE.Mesh(leverHandleGeometry, steelLayerMaterial);
+      const leverDepthOffset = Math.cos(THREE.MathUtils.degToRad(baffleAngleDeg)) * (d * 0.2);
+      leverHandle.position.set(w / 2 + 3, leverPivotY, leverDepthOffset);
+      leverHandle.name = 'baffleLeverHandle';
+      leverHandle.visible = !!config.showBaffle;
+      stoveGroup.add(leverHandle);
+
+      // 6) Димохід (діаметр 150-200 мм)
+      const chimneyRadius = mmToUnits(params.chimneyDiameter) / 2;
+      const chimneyHeight = Math.max(35, h * 0.35);
+      const chimneyGeometry = new THREE.CylinderGeometry(chimneyRadius, chimneyRadius, chimneyHeight, 24);
+      const chimney = new THREE.Mesh(chimneyGeometry, darkMetalMaterial);
+      chimney.position.set(0, bodyBottomY + bodyHeight + chimneyHeight / 2, -d * 0.18);
+      chimney.castShadow = true;
+      chimney.name = 'chimney';
+      chimney.visible = !!config.showChimney;
+      stoveGroup.add(chimney);
+      registerExplodeNode(chimney, new THREE.Vector3(0, 0, -1), mmToUnits(params.explodeBackOffset || 80));
+
+      // 7) Дверця (окремий об'єкт: рамка + площина скла + вісь обертання)
+      const doorWidth = Math.min(mmToUnits(params.doorWidth), chamberW * 0.95);
+      const doorHeight = Math.min(mmToUnits(params.doorHeight), chamberH * 0.95);
+      const doorDepth = 3;
+      const doorFrameThickness = Math.max(1.2, steelThickness * 1.2);
+      const doorCenterY = innerChamber.position.y;
+      const doorPlaneZ = d / 2 + 1.5;
+
+      doorHingePivot = new THREE.Group();
+      doorHingePivot.position.set(-doorWidth / 2, doorCenterY, doorPlaneZ);
+      doorHingePivot.name = 'doorHingePivot';
+      stoveGroup.add(doorHingePivot);
+
+      const doorLeafGroup = new THREE.Group();
+      doorLeafGroup.position.set(doorWidth / 2, 0, 0);
+      doorLeafGroup.name = 'doorLeaf';
+      doorHingePivot.add(doorLeafGroup);
+
+      const makeFramePart = (size, pos, name) => {
+        const m = new THREE.Mesh(new THREE.BoxGeometry(size.x, size.y, size.z), darkMetalMaterial);
+        m.position.set(pos.x, pos.y, pos.z);
+        m.castShadow = true;
+        m.name = name;
+        doorLeafGroup.add(m);
+        return m;
+      };
+
+      makeFramePart(
+        { x: doorWidth, y: doorFrameThickness, z: doorDepth },
+        { x: 0, y: doorHeight / 2 - doorFrameThickness / 2, z: 0 },
+        'doorFrameTop'
+      );
+      makeFramePart(
+        { x: doorWidth, y: doorFrameThickness, z: doorDepth },
+        { x: 0, y: -doorHeight / 2 + doorFrameThickness / 2, z: 0 },
+        'doorFrameBottom'
+      );
+      makeFramePart(
+        { x: doorFrameThickness, y: doorHeight - doorFrameThickness * 2, z: doorDepth },
+        { x: -doorWidth / 2 + doorFrameThickness / 2, y: 0, z: 0 },
+        'doorFrameLeft'
+      );
+      makeFramePart(
+        { x: doorFrameThickness, y: doorHeight - doorFrameThickness * 2, z: doorDepth },
+        { x: doorWidth / 2 - doorFrameThickness / 2, y: 0, z: 0 },
+        'doorFrameRight'
+      );
+
+      // 8) Скло в дверцятах (параметризовані)
+      const glassW = Math.min(mmToUnits(params.glassWidth), doorWidth - doorFrameThickness * 2.2);
+      const glassH = Math.min(mmToUnits(params.glassHeight), doorHeight - doorFrameThickness * 2.2);
+      const glassGeometry = new THREE.BoxGeometry(
+        glassW,
+        glassH,
+        1.5
+      );
+      const glass = new THREE.Mesh(glassGeometry, glassMaterial);
+      glass.position.set(0, doorHeight * 0.05, 1.8);
+      glass.name = 'doorGlass';
+      doorLeafGroup.add(glass);
+
+      doorHitArea = new THREE.Mesh(
+        new THREE.BoxGeometry(doorWidth, doorHeight, doorDepth + 0.5),
+        new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 })
+      );
+      doorHitArea.name = 'doorHitArea';
+      doorLeafGroup.add(doorHitArea);
+
+      // 9) Ручка дверцят справа (якщо дивитись на пічку лицем)
+      const handleGeometry = new THREE.CylinderGeometry(1.2, 1.2, doorWidth * 0.25, 16);
+      const handle = new THREE.Mesh(handleGeometry, steelLayerMaterial);
+      handle.rotation.z = Math.PI / 2;
+      handle.position.set(Math.abs(doorWidth * 0.34), 0, 3.2);
+      handle.name = 'handle';
+      doorLeafGroup.add(handle);
+
+      // Вікно/ефект вогню
+      const windowGeometry = new THREE.BoxGeometry(doorWidth * 0.5, doorHeight * 0.45, 3);
       const windowMaterial = new THREE.MeshStandardMaterial({
         color: 0xff6600,
         emissive: 0xff3300,
         emissiveIntensity: 0.6
       });
       const windowMesh = new THREE.Mesh(windowGeometry, windowMaterial);
-      windowMesh.position.set(0, lh + h * 0.3, d / 2 + 0.02);
+      windowMesh.position.set(0, doorHeight * 0.03, 0.8);
       windowMesh.name = 'fireWindow';
-      stoveGroup.add(windowMesh);
+      doorLeafGroup.add(windowMesh);
+
+      // Air wash канал перед склом (над дверцятами)
+      const airWashChannel = new THREE.Mesh(
+        new THREE.BoxGeometry(glassW + doorFrameThickness * 1.6, doorFrameThickness * 0.9, doorDepth),
+        steelLayerMaterial
+      );
+      airWashChannel.position.set(0, doorHeight / 2 - doorFrameThickness * 1.2, 0.2);
+      airWashChannel.name = 'airWashChannel';
+      airWashChannel.visible = !!config.showAirChannels;
+      doorLeafGroup.add(airWashChannel);
+
+      const maxAirWashOpeningUnits = mmToUnits(25);
+      const airWashOpeningUnits = THREE.MathUtils.clamp(
+        mmToUnits(params.airWashOpening || 8),
+        mmToUnits(1),
+        maxAirWashOpeningUnits
+      );
+      airWashSlotMesh = new THREE.Mesh(
+        new THREE.BoxGeometry(glassW * 0.92, 1, 0.8),
+        new THREE.MeshStandardMaterial({ color: 0x0d0d0d, roughness: 0.9, metalness: 0.1 })
+      );
+      airWashSlotMesh.position.set(0, airWashChannel.position.y - doorFrameThickness * 0.55, 1.7);
+      airWashSlotMesh.scale.y = airWashOpeningUnits;
+      airWashSlotMesh.name = 'airWashSlot';
+      airWashSlotMesh.visible = !!config.showAirChannels;
+      doorLeafGroup.add(airWashSlotMesh);
+
+      targetAirWashOpeningUnits = airWashOpeningUnits;
+      currentAirWashOpeningUnits = airWashOpeningUnits;
+
+      targetDoorAngleDeg = THREE.MathUtils.clamp(params.doorOpenAngle || 0, 0, params.doorMaxAngle || 85);
+      currentDoorAngleDeg = targetDoorAngleDeg;
+      doorHingePivot.rotation.y = -THREE.MathUtils.degToRad(currentDoorAngleDeg);
+
+      // Передня пластина первинного повітря з овальними отворами 50x35 мм
+      const primaryAirPlateWidth = Math.max(mmToUnits(260), chamberW * 0.65);
+      const primaryAirPlateHeight = Math.max(mmToUnits(95), chamberH * 0.2);
+      const primaryAirPlateDepth = 2;
+      const primaryAirPlate = new THREE.Mesh(
+        new THREE.BoxGeometry(primaryAirPlateWidth, primaryAirPlateHeight, primaryAirPlateDepth),
+        darkMetalMaterial
+      );
+      primaryAirPlate.position.set(0, innerChamber.position.y - chamberH * 0.34, d / 2 + 1.2);
+      primaryAirPlate.name = 'primaryAirPlate';
+      primaryAirPlate.visible = !!config.showAirChannels;
+      stoveGroup.add(primaryAirPlate);
+      registerExplodeNode(primaryAirPlate, new THREE.Vector3(0, 0, 1), mmToUnits(params.explodeFrontOffset || 80));
+
+      const holeWidth = mmToUnits(50);
+      const holeHeight = mmToUnits(35);
+      const holeDepth = 1;
+      const holeSpacing = mmToUnits(params.primaryAirSpacing || 65);
+      const holeStartX = mmToUnits(params.primaryAirStartX || -75);
+      const holeStartY = mmToUnits(params.primaryAirStartY || -140);
+      const primaryAirHoleCount = Math.max(1, Math.floor(params.primaryAirHoleCount || 4));
+      const airHoleMaterial = new THREE.MeshStandardMaterial({
+        color: 0x101010,
+        metalness: 0.2,
+        roughness: 0.8
+      });
+
+      for (let i = 0; i < primaryAirHoleCount; i++) {
+        const holeGeometry = new THREE.CylinderGeometry(holeHeight / 2, holeHeight / 2, holeDepth, 28);
+        const hole = new THREE.Mesh(holeGeometry, airHoleMaterial);
+        hole.rotation.z = Math.PI / 2;
+        hole.scale.set(holeWidth / holeHeight, 1, 1);
+        hole.position.set(
+          holeStartX + i * holeSpacing,
+          innerChamber.position.y + holeStartY,
+          d / 2 + 3.2
+        );
+        hole.name = `primaryAirHole-${i}`;
+        hole.visible = !!config.showAirChannels;
+        stoveGroup.add(hole);
+      }
+
+      // Задвижка первинного повітря, яка перекриває частину отворів
+      const shutterCoverage = THREE.MathUtils.clamp((params.primaryAirShutter || 45) / 100, 0, 1);
+      const shutterMaxTravel = (Math.max(1, primaryAirHoleCount) - 1) * holeSpacing + holeWidth;
+      const shutterWidth = Math.max(holeWidth * 0.6, shutterMaxTravel * shutterCoverage);
+      const shutter = new THREE.Mesh(
+        new THREE.BoxGeometry(shutterWidth, holeHeight * 1.3, 1.2),
+        steelLayerMaterial
+      );
+      const holesCenterX = holeStartX + ((primaryAirHoleCount - 1) * holeSpacing) / 2;
+      shutter.position.set(
+        holesCenterX - (shutterMaxTravel * (1 - shutterCoverage)) / 2,
+        innerChamber.position.y + holeStartY,
+        d / 2 + 3.9
+      );
+      shutter.name = 'primaryAirShutter';
+      shutter.visible = !!config.showAirChannels;
+      stoveGroup.add(shutter);
+      registerExplodeNode(shutter, new THREE.Vector3(0, 0, 1), mmToUnits(params.explodeFrontOffset || 80));
+
+      const topCover = bodyGroup.getObjectByName('bodyTopCover');
+      if (topCover) {
+        registerExplodeNode(topCover, new THREE.Vector3(0, 1, 0), mmToUnits(params.explodeTopOffset || 70));
+      }
+
+      applyExplodeTransforms(targetExplodeProgress);
 
       if (lh > 0) {
-        const legGeometry = new THREE.CylinderGeometry(0.02, 0.02, lh, 16);
+        const legGeometry = new THREE.CylinderGeometry(2, 2, lh, 16);
         const legMaterial = new THREE.MeshStandardMaterial({
           color: new THREE.Color(appearance.legColor)
         });
@@ -245,21 +1287,336 @@
           const leg = new THREE.Mesh(legGeometry, legMaterial);
           leg.position.set(...pos);
           leg.castShadow = true;
-          stoveGroup.add(leg);
+          leg.name = 'leg';
+          bodyGroup.add(leg);
         });
       }
     }
 
-    const controlsIds = ['width', 'depth', 'height', 'legs'];
-    document.getElementById('width').value  = config.width;
-    document.getElementById('depth').value  = config.depth;
-    document.getElementById('height').value = config.height;
-    document.getElementById('legs').value   = config.legs;
+    const controlsIds = [
+      'width', 'depth', 'height', 'legs',
+      'steelThickness', 'firebrickThickness',
+      'doorWidthRatio', 'doorHeightRatio',
+      'glassWidthRatio', 'glassHeightRatio',
+      'chimneyDiameter', 'baffleHeight', 'baffleAngle',
+      'airHoleCount', 'airHoleStartX', 'airHoleStartY', 'airHoleSpacing'
+    ];
 
-    document.getElementById('width-value').textContent  = `${config.width} см`;
-    document.getElementById('depth-value').textContent  = `${config.depth} см`;
-    document.getElementById('height-value').textContent = `${config.height} см`;
-    document.getElementById('legs-value').textContent   = `${config.legs} см`;
+    const controlUnits = {
+      width: 'см',
+      depth: 'см',
+      height: 'см',
+      legs: 'см',
+      steelThickness: 'мм',
+      firebrickThickness: 'мм',
+      doorWidthRatio: '%',
+      doorHeightRatio: '%',
+      glassWidthRatio: '%',
+      glassHeightRatio: '%',
+      chimneyDiameter: 'мм',
+      baffleHeight: '%',
+      baffleAngle: '°',
+      airHoleCount: 'шт',
+      airHoleStartX: 'мм',
+      airHoleStartY: 'мм',
+      airHoleSpacing: 'мм'
+    };
+
+    function updateControlViews() {
+      controlsIds.forEach(id => {
+        const input = document.getElementById(id);
+        const display = document.getElementById(`${id}-value`);
+        input.value = config[id];
+        if (display) {
+          display.textContent = `${config[id]} ${controlUnits[id]}`;
+        }
+      });
+    }
+
+    const stoveConfigFields = [
+      'width', 'depth', 'height',
+      'chamberWidth', 'chamberDepth', 'chamberHeight',
+      'steelThickness', 'firebrickThickness', 'chimneyDiameter',
+      'doorWidth', 'doorHeight', 'glassWidth', 'glassHeight',
+      'baffleHeight', 'baffleAngle', 'baffleFrontGap', 'baffleRearGap',
+      'doorMaxAngle', 'doorOpenAngle',
+      'primaryAirHoleCount', 'primaryAirStartX', 'primaryAirStartY', 'primaryAirSpacing', 'primaryAirShutter',
+      'airWashOpening', 'secondaryAir', 'flameIntensity', 'fuelLoadVolume',
+      'explodeFrontOffset', 'explodeBackOffset', 'explodeTopOffset', 'explodeBaffleOffset', 'explodeBrickOffset'
+    ];
+
+    function updateStoveConfigForm() {
+      stoveConfigFields.forEach((field) => {
+        const input = document.getElementById(`cfg-${field}`);
+        if (input) {
+          input.value = config.stove[field];
+        }
+      });
+    }
+
+    function applyStoveConfigForm() {
+      const nextStove = { ...config.stove };
+      stoveConfigFields.forEach((field) => {
+        const input = document.getElementById(`cfg-${field}`);
+        const value = Number(input.value);
+        const allowZeroFields = ['doorOpenAngle', 'primaryAirShutter'];
+        const isValid = allowZeroFields.includes(field)
+          ? Number.isFinite(value) && value >= 0
+          : Number.isFinite(value) && value > 0;
+        if (isValid) {
+          nextStove[field] = value;
+        }
+      });
+      config.stove = nextStove;
+      config.stove.doorOpenAngle = THREE.MathUtils.clamp(
+        config.stove.doorOpenAngle,
+        0,
+        config.stove.doorMaxAngle
+      );
+
+      // синхронізуємо основні слайдери з базовими габаритами (мм -> см)
+      config.width = Math.round(nextStove.width / 10);
+      config.depth = Math.round(nextStove.depth / 10);
+      config.height = Math.round(nextStove.height / 10);
+
+      updateControlViews();
+      refreshDoorControl();
+      refreshAirWashControl();
+      refreshPresetInfo();
+      saveConfig(config);
+      renderStove();
+    }
+
+    function renderStove() {
+      const stove = config.stove || defaultStoveConfig;
+      physicsState = calculatePhysicsState(config.burnPreset || 'medium', stove);
+      targetExplodeProgress = THREE.MathUtils.clamp(config.explodeProgress || 0, 0, 100);
+      currentExplodeProgress = targetExplodeProgress;
+      createStove(
+        mmToUnits(stove.width),
+        mmToUnits(stove.depth),
+        mmToUnits(stove.height),
+        config.legs,
+        {
+          chamberWidth: stove.chamberWidth,
+          chamberDepth: stove.chamberDepth,
+          chamberHeight: stove.chamberHeight,
+          steelThickness: stove.steelThickness,
+          firebrickThickness: stove.firebrickThickness,
+          doorWidth: stove.doorWidth,
+          doorHeight: stove.doorHeight,
+          glassWidth: stove.glassWidth,
+          glassHeight: stove.glassHeight,
+          chimneyDiameter: stove.chimneyDiameter,
+          baffleHeight: stove.baffleHeight,
+          baffleAngle: stove.baffleAngle,
+          baffleFrontGap: stove.baffleFrontGap,
+          baffleRearGap: stove.baffleRearGap,
+          doorMaxAngle: stove.doorMaxAngle,
+          doorOpenAngle: stove.doorOpenAngle,
+          primaryAirHoleCount: stove.primaryAirHoleCount,
+          primaryAirStartX: stove.primaryAirStartX,
+          primaryAirStartY: stove.primaryAirStartY,
+          primaryAirSpacing: stove.primaryAirSpacing,
+          primaryAirShutter: stove.primaryAirShutter,
+          airWashOpening: stove.airWashOpening,
+          secondaryAir: stove.secondaryAir,
+          flameIntensity: stove.flameIntensity,
+          explodeFrontOffset: stove.explodeFrontOffset,
+          explodeBackOffset: stove.explodeBackOffset,
+          explodeTopOffset: stove.explodeTopOffset,
+          explodeBaffleOffset: stove.explodeBaffleOffset,
+          explodeBrickOffset: stove.explodeBrickOffset
+        },
+        {
+          bodyColor: config.bodyColor,
+          doorColor: config.doorColor,
+          legColor: config.legColor
+        }
+      );
+    }
+
+    updateControlViews();
+    updateStoveConfigForm();
+
+    const applyConfigBtn = document.getElementById('applyConfig');
+    applyConfigBtn.addEventListener('click', applyStoveConfigForm);
+
+    const doorOpenControl = document.getElementById('doorOpenControl');
+    const doorOpenValue = document.getElementById('doorOpenControl-value');
+    const toggleDoorBtn = document.getElementById('toggleDoor');
+    const airWashOpeningControl = document.getElementById('airWashOpeningControl');
+    const airWashOpeningValue = document.getElementById('airWashOpeningControl-value');
+    const viewModeSelect = document.getElementById('viewMode');
+    const drawingModeCheckbox = document.getElementById('drawingModeEnabled');
+    const showChamotteCheckbox = document.getElementById('showChamotte');
+    const showBaffleCheckbox = document.getElementById('showBaffle');
+    const showAirChannelsCheckbox = document.getElementById('showAirChannels');
+    const showChimneyCheckbox = document.getElementById('showChimney');
+    const explodeProgressControl = document.getElementById('explodeProgress');
+    const explodeProgressValue = document.getElementById('explodeProgress-value');
+    const toggleExplodeBtn = document.getElementById('toggleExplode');
+    const burnPresetSelect = document.getElementById('burnPreset');
+    const burnPresetInfo = document.getElementById('burnPresetInfo');
+    const metricEfficiency = document.getElementById('metricEfficiency');
+    const metricHeatOutput = document.getElementById('metricHeatOutput');
+    const metricBurnTime = document.getElementById('metricBurnTime');
+    const metricAirFlow = document.getElementById('metricAirFlow');
+    const metricTemperature = document.getElementById('metricTemperature');
+    const burnWarningsList = document.getElementById('burnWarningsList');
+
+    const refreshDoorControl = () => {
+      const maxAngle = config.stove?.doorMaxAngle || 85;
+      const angle = THREE.MathUtils.clamp(config.stove?.doorOpenAngle || 0, 0, maxAngle);
+      doorOpenControl.max = String(maxAngle);
+      doorOpenControl.value = String(angle);
+      doorOpenValue.textContent = `${Math.round(angle)} °`;
+    };
+
+    const refreshAirWashControl = () => {
+      const opening = THREE.MathUtils.clamp(config.stove?.airWashOpening || 8, 1, 25);
+      airWashOpeningControl.value = String(opening);
+      airWashOpeningValue.textContent = `${Math.round(opening)} мм`;
+    };
+
+    const refreshExplodeControl = () => {
+      const val = THREE.MathUtils.clamp(config.explodeProgress || 0, 0, 100);
+      explodeProgressControl.value = String(val);
+      explodeProgressValue.textContent = `${Math.round(val)} %`;
+      targetExplodeProgress = val;
+    };
+
+    const refreshPresetInfo = () => {
+      const p = config.stove || defaultStoveConfig;
+      burnPresetInfo.textContent = `Primary: ${Math.round(p.primaryAirShutter)}%, Secondary: ${Math.round(p.secondaryAir)}%, Air wash: ${Math.round(p.airWashOpening)} мм, Flame: ${Math.round(p.flameIntensity)}%`;
+
+      const state = calculatePhysicsState(config.burnPreset || 'medium', p);
+      const metrics = state.outputs;
+      metricEfficiency.textContent = `${metrics.efficiencyPct.toFixed(1)} %`;
+      metricHeatOutput.textContent = `${metrics.heatOutputKw.toFixed(1)} кВт`;
+      metricBurnTime.textContent = `${metrics.burnTimeHours.toFixed(1)} год (V=${state.inputs.fuelLoadVolumeL.toFixed(0)} л)`;
+      metricAirFlow.textContent = `${metrics.airFlowM3H.toFixed(1)} м³/год`;
+      metricTemperature.textContent = `${Math.round(metrics.temperatureC)} °C`;
+
+      const warnings = state.warnings;
+      burnWarningsList.innerHTML = '';
+      warnings.forEach((item) => {
+        const li = document.createElement('li');
+        li.textContent = item.text;
+        li.style.color = item.level === 'danger' ? '#b00020' : (item.level === 'warning' ? '#8a5a00' : '#1b5e20');
+        burnWarningsList.appendChild(li);
+      });
+    };
+
+    const applyBurnPreset = (presetName) => {
+      const preset = burnPresets[presetName];
+      if (!preset) {
+        return;
+      }
+      config.stove.primaryAirShutter = preset.primaryAirShutter;
+      config.stove.secondaryAir = preset.secondaryAir;
+      config.stove.airWashOpening = preset.airWashOpening;
+      config.stove.flameIntensity = preset.flameIntensity;
+      config.burnPreset = presetName;
+
+      targetAirWashOpeningUnits = mmToUnits(config.stove.airWashOpening);
+      refreshAirWashControl();
+      refreshPresetInfo();
+      updateStoveConfigForm();
+      saveConfig(config);
+      renderStove();
+    };
+
+    refreshDoorControl();
+    refreshAirWashControl();
+    refreshExplodeControl();
+    burnPresetSelect.value = config.burnPreset || 'medium';
+    refreshPresetInfo();
+    viewModeSelect.value = config.viewMode || '3d';
+    drawingModeCheckbox.checked = !!config.drawingModeEnabled;
+    showChamotteCheckbox.checked = !!config.showChamotte;
+    showBaffleCheckbox.checked = !!config.showBaffle;
+    showAirChannelsCheckbox.checked = !!config.showAirChannels;
+    showChimneyCheckbox.checked = !!config.showChimney;
+    applyViewMode(config.viewMode || '3d');
+
+    doorOpenControl.addEventListener('input', (e) => {
+      const maxAngle = config.stove?.doorMaxAngle || 85;
+      const angle = THREE.MathUtils.clamp(parseFloat(e.target.value) || 0, 0, maxAngle);
+      config.stove.doorOpenAngle = angle;
+      targetDoorAngleDeg = angle;
+      doorOpenValue.textContent = `${Math.round(angle)} °`;
+      saveConfig(config);
+    });
+
+    toggleDoorBtn.addEventListener('click', () => {
+      const maxAngle = config.stove?.doorMaxAngle || 85;
+      const next = targetDoorAngleDeg > maxAngle * 0.5 ? 0 : maxAngle;
+      targetDoorAngleDeg = next;
+      config.stove.doorOpenAngle = next;
+      refreshDoorControl();
+      saveConfig(config);
+    });
+
+    airWashOpeningControl.addEventListener('input', (e) => {
+      const opening = THREE.MathUtils.clamp(parseFloat(e.target.value) || 1, 1, 25);
+      config.stove.airWashOpening = opening;
+      targetAirWashOpeningUnits = mmToUnits(opening);
+      airWashOpeningValue.textContent = `${Math.round(opening)} мм`;
+      saveConfig(config);
+    });
+
+    explodeProgressControl.addEventListener('input', (e) => {
+      const val = THREE.MathUtils.clamp(parseFloat(e.target.value) || 0, 0, 100);
+      config.explodeProgress = val;
+      targetExplodeProgress = val;
+      explodeProgressValue.textContent = `${Math.round(val)} %`;
+      saveConfig(config);
+    });
+
+    burnPresetSelect.addEventListener('change', (e) => {
+      applyBurnPreset(e.target.value);
+    });
+
+    toggleExplodeBtn.addEventListener('click', () => {
+      const next = (config.explodeProgress || 0) > 0 ? 0 : 100;
+      config.explodeProgress = next;
+      targetExplodeProgress = next;
+      refreshExplodeControl();
+      saveConfig(config);
+    });
+
+    viewModeSelect.addEventListener('change', (e) => {
+      config.viewMode = e.target.value;
+      applyViewMode(config.viewMode);
+      saveConfig(config);
+    });
+
+    drawingModeCheckbox.addEventListener('change', (e) => {
+      config.drawingModeEnabled = e.target.checked;
+      if (config.drawingModeEnabled && config.viewMode === '3d') {
+        config.viewMode = 'front';
+        viewModeSelect.value = 'front';
+        applyViewMode('front');
+      }
+      if (!config.drawingModeEnabled && config.viewMode !== '3d') {
+        config.viewMode = '3d';
+        viewModeSelect.value = '3d';
+        applyViewMode('3d');
+      }
+      saveConfig(config);
+    });
+
+    const visibilityToggleHandler = (key) => (e) => {
+      config[key] = e.target.checked;
+      saveConfig(config);
+      renderStove();
+    };
+
+    showChamotteCheckbox.addEventListener('change', visibilityToggleHandler('showChamotte'));
+    showBaffleCheckbox.addEventListener('change', visibilityToggleHandler('showBaffle'));
+    showAirChannelsCheckbox.addEventListener('change', visibilityToggleHandler('showAirChannels'));
+    showChimneyCheckbox.addEventListener('change', visibilityToggleHandler('showChimney'));
 
     document.getElementById('bodyColor').value = config.bodyColor;
     document.getElementById('doorColor').value = config.doorColor;
@@ -267,39 +1624,92 @@
 
     const fireCheckbox = document.getElementById('fireEnabled');
     fireCheckbox.checked = config.fireEnabled;
+    const gridCheckbox = document.getElementById('gridEnabled');
+    const axesCheckbox = document.getElementById('axesEnabled');
+    gridCheckbox.checked = config.gridEnabled;
+    axesCheckbox.checked = config.axesEnabled;
+    gridHelper.visible = config.gridEnabled;
+    axesHelper.visible = config.axesEnabled;
+
+    const exportBtn = document.getElementById('exportConfig');
+    const importBtn = document.getElementById('importConfigBtn');
+    const importFileInput = document.getElementById('importConfigFile');
+    const helpOverlay = document.getElementById('helpOverlay');
+    const openHelpBtn = document.getElementById('openHelp');
+    const closeHelpBtn = document.getElementById('closeHelp');
+
+    const applyLoadedConfig = () => {
+      updateControlViews();
+      updateStoveConfigForm();
+      refreshDoorControl();
+      refreshAirWashControl();
+      refreshExplodeControl();
+      burnPresetSelect.value = config.burnPreset;
+      refreshPresetInfo();
+      viewModeSelect.value = config.viewMode;
+      drawingModeCheckbox.checked = !!config.drawingModeEnabled;
+      showChamotteCheckbox.checked = !!config.showChamotte;
+      showBaffleCheckbox.checked = !!config.showBaffle;
+      showAirChannelsCheckbox.checked = !!config.showAirChannels;
+      showChimneyCheckbox.checked = !!config.showChimney;
+      applyViewMode(config.viewMode);
+      document.getElementById('bodyColor').value = config.bodyColor;
+      document.getElementById('doorColor').value = config.doorColor;
+      document.getElementById('legColor').value = config.legColor;
+      fireCheckbox.checked = config.fireEnabled;
+      gridCheckbox.checked = config.gridEnabled;
+      axesCheckbox.checked = config.axesEnabled;
+      gridHelper.visible = config.gridEnabled;
+      axesHelper.visible = config.axesEnabled;
+      saveConfig(config);
+      renderStove();
+    };
+
+    exportBtn.addEventListener('click', () => {
+      const payload = JSON.stringify(config, null, 2);
+      const blob = new Blob([payload], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `woodstove-config-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    importBtn.addEventListener('click', () => importFileInput.click());
+    importFileInput.addEventListener('change', async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        config = {
+          ...defaultConfig,
+          ...parsed,
+          stove: { ...defaultStoveConfig, ...(parsed.stove || {}) }
+        };
+        applyLoadedConfig();
+      } catch (err) {
+        alert('Некоректний JSON конфіг. Перевірте файл.');
+      } finally {
+        importFileInput.value = '';
+      }
+    });
+
+    openHelpBtn.addEventListener('click', () => helpOverlay.classList.add('open'));
+    closeHelpBtn.addEventListener('click', () => helpOverlay.classList.remove('open'));
+    helpOverlay.addEventListener('click', (e) => {
+      if (e.target === helpOverlay) {
+        helpOverlay.classList.remove('open');
+      }
+    });
 
     const resetBtn = document.getElementById('resetConfig');
     resetBtn.addEventListener('click', () => {
       localStorage.removeItem(STORAGE_KEY);
-      config = { ...defaultConfig };
+      config = { ...defaultConfig, stove: { ...defaultStoveConfig } };
 
-      document.getElementById('width').value  = config.width;
-      document.getElementById('depth').value  = config.depth;
-      document.getElementById('height').value = config.height;
-      document.getElementById('legs').value   = config.legs;
-
-      document.getElementById('width-value').textContent  = `${config.width} см`;
-      document.getElementById('depth-value').textContent  = `${config.depth} см`;
-      document.getElementById('height-value').textContent = `${config.height} см`;
-      document.getElementById('legs-value').textContent   = `${config.legs} см`;
-
-      document.getElementById('bodyColor').value = config.bodyColor;
-      document.getElementById('doorColor').value = config.doorColor;
-      document.getElementById('legColor').value  = config.legColor;
-      fireCheckbox.checked = config.fireEnabled;
-
-      saveConfig(config);
-      createStove(
-        config.width,
-        config.depth,
-        config.height,
-        config.legs,
-        {
-          bodyColor: config.bodyColor,
-          doorColor: config.doorColor,
-          legColor: config.legColor
-        }
-      );
+      applyLoadedConfig();
     });
 
     controlsIds.forEach(control => {
@@ -307,27 +1717,37 @@
       const display = document.getElementById(`${control}-value`);
 
       slider.addEventListener('input', (e) => {
-        const value = parseInt(e.target.value);
-        display.textContent = `${value} см`;
+        const value = parseFloat(e.target.value);
+        config[control] = Number.isInteger(value) ? parseInt(value) : value;
 
-        config.width  = parseInt(document.getElementById('width').value);
-        config.depth  = parseInt(document.getElementById('depth').value);
-        config.height = parseInt(document.getElementById('height').value);
-        config.legs   = parseInt(document.getElementById('legs').value);
+        const controlToStoveMap = {
+          width: 'width',
+          depth: 'depth',
+          height: 'height',
+          steelThickness: 'steelThickness',
+          firebrickThickness: 'firebrickThickness',
+          chimneyDiameter: 'chimneyDiameter',
+          baffleAngle: 'baffleAngle',
+          airHoleCount: 'primaryAirHoleCount',
+          airHoleStartX: 'primaryAirStartX',
+          airHoleStartY: 'primaryAirStartY',
+          airHoleSpacing: 'primaryAirSpacing'
+        };
 
+        if (controlToStoveMap[control]) {
+          const targetKey = controlToStoveMap[control];
+          const normalizedValue = ['width', 'depth', 'height'].includes(control)
+            ? config[control] * 10
+            : config[control];
+          config.stove[targetKey] = normalizedValue;
+          updateStoveConfigForm();
+        }
+
+        if (display) {
+          display.textContent = `${config[control]} ${controlUnits[control]}`;
+        }
         saveConfig(config);
-
-        createStove(
-          config.width,
-          config.depth,
-          config.height,
-          config.legs,
-          {
-            bodyColor: config.bodyColor,
-            doorColor: config.doorColor,
-            legColor: config.legColor
-          }
-        );
+        renderStove();
       });
     });
 
@@ -336,17 +1756,7 @@
       input.addEventListener('input', (e) => {
         config[id] = e.target.value;
         saveConfig(config);
-        createStove(
-          config.width,
-          config.depth,
-          config.height,
-          config.legs,
-          {
-            bodyColor: config.bodyColor,
-            doorColor: config.doorColor,
-            legColor: config.legColor
-          }
-        );
+        renderStove();
       });
     });
 
@@ -355,73 +1765,47 @@
       saveConfig(config);
     });
 
-    createStove(
-      config.width,
-      config.depth,
-      config.height,
-      config.legs,
-      {
-        bodyColor: config.bodyColor,
-        doorColor: config.doorColor,
-        legColor: config.legColor
-      }
-    );
-
-    let isDragging = false;
-    let previousMousePosition = { x: 0, y: 0 };
-    let cameraAngle = { x: 0, y: 0 };
-    const cameraDistance = 3;
-
-    renderer.domElement.addEventListener('mousedown', (e) => {
-      isDragging = true;
-      previousMousePosition = { x: e.clientX, y: e.clientY };
+    gridCheckbox.addEventListener('change', (e) => {
+      config.gridEnabled = e.target.checked;
+      gridHelper.visible = config.gridEnabled;
+      saveConfig(config);
     });
 
-    renderer.domElement.addEventListener('mousemove', (e) => {
-      if (isDragging) {
-        const deltaX = e.clientX - previousMousePosition.x;
-        const deltaY = e.clientY - previousMousePosition.y;
+    axesCheckbox.addEventListener('change', (e) => {
+      config.axesEnabled = e.target.checked;
+      axesHelper.visible = config.axesEnabled;
+      saveConfig(config);
+    });
 
-        cameraAngle.y += deltaX * 0.005;
-        cameraAngle.x += deltaY * 0.005;
-
-        cameraAngle.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, cameraAngle.x));
-
-        camera.position.x = cameraDistance * Math.cos(cameraAngle.x) * Math.sin(cameraAngle.y);
-        camera.position.y = cameraDistance * Math.sin(cameraAngle.x) + 1;
-        camera.position.z = cameraDistance * Math.cos(cameraAngle.x) * Math.cos(cameraAngle.y);
-        camera.lookAt(0, 1, 0);
-
-        previousMousePosition = { x: e.clientX, y: e.clientY };
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    renderer.domElement.addEventListener('click', (event) => {
+      if (!doorHitArea) {
+        return;
+      }
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+      const hits = raycaster.intersectObject(doorHitArea, true);
+      if (hits.length > 0) {
+        const maxAngle = config.stove?.doorMaxAngle || 85;
+        const next = targetDoorAngleDeg > maxAngle * 0.5 ? 0 : maxAngle;
+        targetDoorAngleDeg = next;
+        config.stove.doorOpenAngle = next;
+        refreshDoorControl();
+        saveConfig(config);
       }
     });
 
-    renderer.domElement.addEventListener('mouseup', () => {
-      isDragging = false;
-    });
-
-    renderer.domElement.addEventListener('mouseleave', () => {
-      isDragging = false;
-    });
-
-    renderer.domElement.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      const zoomSpeed = 0.1;
-      const target = new THREE.Vector3(0, 1, 0);
-      const currentDistance = camera.position.distanceTo(target);
-      const newDistance = currentDistance + (e.deltaY > 0 ? zoomSpeed : -zoomSpeed);
-
-      if (newDistance > 1 && newDistance < 10) {
-        const dir = camera.position.clone().sub(target).normalize();
-        const newPos = dir.multiplyScalar(newDistance).add(target);
-        camera.position.copy(newPos);
-      }
-    });
+    renderStove();
 
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
+      drawingCanvas.width = window.innerWidth;
+      drawingCanvas.height = window.innerHeight;
     });
 
     const clock = new THREE.Clock();
@@ -431,16 +1815,66 @@
 
       const elapsed = clock.getElapsedTime();
       const fireWindow = stoveGroup.getObjectByName('fireWindow');
+      orbitControls.update();
+
+      if (Math.abs(targetDoorAngleDeg - currentDoorAngleDeg) > 0.01) {
+        const delta = targetDoorAngleDeg - currentDoorAngleDeg;
+        const step = Math.sign(delta) * Math.min(Math.abs(delta), doorAnimSpeedDegPerFrame);
+        currentDoorAngleDeg += step;
+        if (doorHingePivot) {
+          doorHingePivot.rotation.y = -THREE.MathUtils.degToRad(currentDoorAngleDeg);
+        }
+      }
+
+      if (Math.abs(targetAirWashOpeningUnits - currentAirWashOpeningUnits) > 0.005) {
+        const deltaAirWash = targetAirWashOpeningUnits - currentAirWashOpeningUnits;
+        const stepAirWash = Math.sign(deltaAirWash) * Math.min(Math.abs(deltaAirWash), 0.08);
+        currentAirWashOpeningUnits += stepAirWash;
+        if (airWashSlotMesh) {
+          airWashSlotMesh.scale.y = currentAirWashOpeningUnits;
+        }
+      }
+
+      if (Math.abs(targetExplodeProgress - currentExplodeProgress) > 0.2) {
+        const deltaExplode = targetExplodeProgress - currentExplodeProgress;
+        currentExplodeProgress += Math.sign(deltaExplode) * Math.min(Math.abs(deltaExplode), 2);
+        applyExplodeTransforms(currentExplodeProgress);
+      }
 
       if (fireWindow && fireWindow.material && config.fireEnabled) {
-        const baseIntensity = 0.6;
-        const amplitude = 0.3;
-        const speed = 5.0;
+        const combustion = physicsState?.outputs?.combustion || { emissiveBase: 0.6, emissiveAmplitude: 0.2, emissiveSpeed: 5.0 };
         fireWindow.material.emissiveIntensity =
-          baseIntensity + Math.sin(elapsed * speed) * amplitude;
+          combustion.emissiveBase + Math.sin(elapsed * combustion.emissiveSpeed) * combustion.emissiveAmplitude;
+      }
+
+      if (config.fireEnabled && flameParticles.length > 0) {
+        const flameNorm = THREE.MathUtils.clamp((physicsState?.outputs?.combustion?.flameNorm ?? 0.6), 0.1, 1.3);
+        const colorLow = new THREE.Color(0xff5a1f);
+        const colorHigh = new THREE.Color(0xffef9a);
+        const flameColor = colorLow.clone().lerp(colorHigh, flameNorm);
+        flameParticles.forEach((p, idx) => {
+          const flicker = 0.75 + Math.sin(elapsed * (5.5 + idx * 0.17) + p.userData.phase) * 0.35;
+          p.scale.y = Math.max(0.4, flicker * flameNorm);
+          p.position.y = Math.max(1.2, p.userData.baseHeight * 0.45 + flicker * 2.5 * flameNorm);
+          p.position.x = p.userData.x0 + Math.sin(elapsed * 1.8 + idx) * 0.15;
+          p.position.z = p.userData.z0 + Math.cos(elapsed * 1.6 + idx) * 0.15;
+          if (p.material) {
+            p.material.color.copy(flameColor);
+            p.material.emissive.copy(flameColor).multiplyScalar(0.4 + flameNorm * 0.2);
+            p.material.opacity = 0.45 + flameNorm * 0.35;
+          }
+        });
+      } else if (flameParticles.length > 0) {
+        flameParticles.forEach((p) => {
+          p.scale.y = 0.05;
+          if (p.material) {
+            p.material.opacity = 0.08;
+          }
+        });
       }
 
       renderer.render(scene, camera);
+      renderDrawingOverlay();
     }
 
     animate();
