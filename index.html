@@ -93,6 +93,7 @@
 
     <h3>Димохід та дверця (базові параметри)</h3>
     <div class="control-group"><label for="chimneyDiameterCm">Діаметр димоходу (см)</label><input type="range" id="chimneyDiameterCm" min="10" max="25" step="0.5"><div class="value-display" id="chimneyDiameterCm-value"></div></div>
+    <div class="control-group"><label for="chimneyHeightCm">Висота труби (см)</label><input type="range" id="chimneyHeightCm" min="100" max="150" step="1"><div class="value-display" id="chimneyHeightCm-value"></div></div>
     <div class="control-group"><label for="doorWidthCm">Ширина дверцят (см)</label><input type="range" id="doorWidthCm" min="20" max="70" step="1"><div class="value-display" id="doorWidthCm-value"></div></div>
     <div class="control-group"><label for="doorHeightCm">Висота дверцят (см)</label><input type="range" id="doorHeightCm" min="20" max="70" step="1"><div class="value-display" id="doorHeightCm-value"></div></div>
     <div class="control-group"><label for="glassInsetCm">Відступ скла від рамки (см)</label><input type="range" id="glassInsetCm" min="1" max="6" step="0.5"><div class="value-display" id="glassInsetCm-value"></div></div>
@@ -194,7 +195,7 @@
       },
       chimney: {
         diameterCm: 15,
-        heightCm: 35
+        heightCm: 120
       },
       baffle: {
         heightCm: 58,
@@ -276,6 +277,7 @@
       operationMode: 'operation.mode',
       viewMode: 'viewMode',
       chimneyDiameterCm: 'chimney.diameterCm',
+      chimneyHeightCm: 'chimney.heightCm',
       doorWidthCm: 'door.widthCm',
       doorHeightCm: 'door.heightCm',
       glassInsetCm: 'door.glassInsetCm',
@@ -355,6 +357,7 @@
       cfg.materials.firebrickThicknessCm = Math.max(2, Math.min(8, cfg.materials.firebrickThicknessCm));
 
       cfg.chimney.diameterCm = Math.max(10, Math.min(25, cfg.chimney.diameterCm));
+      cfg.chimney.heightCm = Math.max(100, Math.min(150, cfg.chimney.heightCm));
 
       cfg.baffle.heightCm = Math.max(20, Math.min(120, cfg.baffle.heightCm));
       cfg.baffle.angleDeg = Math.max(-20, Math.min(30, cfg.baffle.angleDeg));
